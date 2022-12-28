@@ -122,17 +122,26 @@ impl CPU {
     }
 
     pub fn fetch_decode_execute(&mut self) -> CPUIterationDecision {
-        let first_half: u16 = self.memory[self.program_counter as usize].into();
-        let second_half: u16 = self.memory[self.program_counter as usize + 1].into();
-        let mut instruction = first_half << 8;
-        instruction |= second_half;
+        let most_significant_byte: u16 = self.memory[self.program_counter as usize].into();
+        let least_significant_byte: u16 = self.memory[self.program_counter as usize + 1].into();
+        let mut instruction = most_significant_byte << 8;
+        instruction |= least_significant_byte;
 
         debug!("Instruction: {:04x}", instruction);
 
-        if let 0xFFFF = instruction {
+        if instruction == 0xFFFF {
             debug!("Halting");
             return CPUIterationDecision::Halt;
         }
+
+        // 0x1nnn = JP addr nnn
+        if most_significant_byte & 0xf0 == 0x10 {
+            debug!("JP {:04X}", instruction);
+            self.program_counter = instruction & 0x0fff;
+            return CPUIterationDecision::Continue;
+        }
+
+        warn!("Unhandled opcode: {:04X}", instruction);
 
         self.program_counter += 2;
         return CPUIterationDecision::Continue;
