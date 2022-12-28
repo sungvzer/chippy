@@ -37,8 +37,7 @@ pub struct CPU {
     /// NOTE: Only 12 bits are used for this
     program_counter: u16,
 
-    /// NOTE: Only 12 bits are used for this
-    stack_pointer: u16,
+    stack_pointer: u8,
 }
 
 impl CPU {
@@ -94,7 +93,7 @@ impl CPU {
         Ok(bytes)
     }
 
-    pub fn stack_pointer(&self) -> u16 {
+    pub fn stack_pointer(&self) -> u8 {
         self.stack_pointer
     }
     pub fn program_counter(&self) -> u16 {
