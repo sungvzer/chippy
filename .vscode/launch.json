@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'chip8'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=chip8",
+                    "--package=chip8"
+                ],
+                "filter": {
+                    "name": "chip8",
+                    "kind": "bin"
+                }
+            },
+            "args": [
+                "-d",
+                "${workspaceFolder}/examples/randomnumber/random_number_test.ch8"
+            ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'chip8'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=chip8",
+                    "--package=chip8"
+                ],
+                "filter": {
+                    "name": "chip8",
+                    "kind": "bin"
+                }
+            },
+            "args": [
+                "-d"
+            ],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
