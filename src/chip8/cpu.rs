@@ -160,6 +160,10 @@ impl CPU {
                 debug!("JP {:04X}", addr);
                 self.jump(addr)
             }
+            Instruction::LDI(addr) => {
+                debug!("LD I, {:04X}", addr);
+                self.memory_location = addr;
+            }
             Instruction::LD(register, value) => {
                 debug!("LD V{:X}, {:02X}", register, value);
                 self.set_register(register, value);

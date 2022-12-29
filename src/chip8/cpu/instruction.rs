@@ -15,6 +15,9 @@ pub enum Instruction {
     /** RND Vx, byte & kk */
     RND(u8, u8),
 
+    /** LD I, addr */
+    LDI(u16),
+
     // Non-standard, stops execution
     HLT,
 }
@@ -45,6 +48,12 @@ pub fn parse_instruction(instruction: u16) -> Result<Instruction, ()> {
         let register_index = most_significant_byte & 0x0f;
         let value = least_significant_byte;
         return Ok(Instruction::LD(register_index, value));
+    }
+
+    if most_significant_byte & 0xf0 == 0xA0 {
+        // 0xAnnn = LD I, nnn
+        let address = instruction & 0xfff;
+        return Ok(Instruction::LDI(address));
     }
 
     if most_significant_byte & 0xf0 == 0xC0 {
