@@ -148,7 +148,9 @@ impl CPU {
             Ok(instruction) => instruction,
             Err(_) => {
                 dump_cpu(&self, DumpMemory::No);
-                todo!("Un-parsed opcode: {:04X}", instruction_opcode);
+                let string = format!("Un-parsed opcode: {:04X}", instruction_opcode);
+                error!("{}", string);
+                todo!("{}", string);
             }
         };
 
