@@ -18,8 +18,23 @@ pub enum Instruction {
     /** LD I, addr */
     LDI(u16),
 
+    /** LD B, Vx - Load BCD value of Vx into I..I+2 */
+    LDB(u8),
+
     // Non-standard, stops execution
     HLT,
+}
+
+fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
+    // We can give for granted that the instruction starts with 0xFnnn
+    let register = (instruction & 0x0f00) >> 8;
+    let least_significant_byte = instruction & 0x00ff;
+
+    if least_significant_byte == 0x33 {
+        return Ok(Instruction::LDB(register as u8));
+    }
+
+    Err(())
 }
 
 pub fn parse_instruction(instruction: u16) -> Result<Instruction, ()> {
@@ -61,6 +76,10 @@ pub fn parse_instruction(instruction: u16) -> Result<Instruction, ()> {
         let register_index = most_significant_byte & 0x0f;
         let bit_mask = least_significant_byte;
         return Ok(Instruction::RND(register_index, bit_mask));
+    }
+    if most_significant_byte & 0xf0 == 0xF0 {
+        // 0xFnnn, needs more parsing
+        return parse_f_instruction(instruction);
     }
 
     Err(())
