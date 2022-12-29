@@ -135,6 +135,21 @@ impl CPU {
         ((self.memory[addr] as u16) << 8) | self.memory[addr + 1] as u16
     }
 
+    fn copy_register_bcd_into_memory(&mut self, register: u8) {
+        let mut value = self.registers[register as usize];
+
+        let addr = self.memory_location;
+
+        let ones = value % 10;
+        value /= 10;
+        let tens = value % 10;
+        value /= 10;
+        let hundreds = value % 10;
+        self.memory[addr as usize] = hundreds;
+        self.memory[(addr + 1) as usize] = tens;
+        self.memory[(addr + 2) as usize] = ones;
+    }
+
     fn jump(&mut self, addr: u16) {
         self.program_counter = addr;
     }
@@ -179,6 +194,11 @@ impl CPU {
             }
             Instruction::CLS => {
                 debug!("TODO: Implement CLS");
+            }
+            Instruction::LDB(register) => {
+                debug!("LD B, V{:X}", register);
+                self.copy_register_bcd_into_memory(register);
+                dump_cpu(&self, DumpMemory::Yes);
             }
             other => {
                 todo!("Implement {:?}", other)
