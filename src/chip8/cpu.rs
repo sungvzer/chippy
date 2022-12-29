@@ -1,6 +1,13 @@
+pub mod instruction;
+
 use std::{fs::OpenOptions, io::Read, path::PathBuf};
 
 use log::{debug, error, info, warn};
+
+use crate::chip8::{
+    cpu::instruction::{parse_instruction, Instruction},
+    dumper::{dump_cpu, DumpMemory},
+};
 
 type Register = u8;
 
@@ -120,29 +127,49 @@ impl CPU {
         &self.memory
     }
 
+    fn read_u16_from_memory(&self, addr: usize) -> u16 {
+        ((self.memory[addr] as u16) << 8) | self.memory[addr + 1] as u16
+    }
+
+    fn jump(&mut self, addr: u16) {
+        self.program_counter = addr;
+    }
+
     pub fn fetch_decode_execute(&mut self) -> CPUIterationDecision {
-        let most_significant_byte: u16 = self.memory[self.program_counter as usize].into();
-        let least_significant_byte: u16 = self.memory[self.program_counter as usize + 1].into();
-        let mut instruction = most_significant_byte << 8;
-        instruction |= least_significant_byte;
+        // Fetch
+        let instruction_opcode = self.read_u16_from_memory(self.program_counter as usize);
 
-        debug!("Instruction: {:04x}", instruction);
+        debug!("Instruction: {:04x}", instruction_opcode);
 
-        if instruction == 0xFFFF {
-            debug!("Halting");
-            return CPUIterationDecision::Halt;
+        // Decode
+        let instruction = match parse_instruction(instruction_opcode) {
+            Ok(instruction) => instruction,
+            Err(_) => {
+                dump_cpu(&self, DumpMemory::No);
+                todo!("Un-parsed opcode: {:04X}", instruction_opcode);
+            }
+        };
+
+        // Execute
+        match instruction {
+            Instruction::JP(addr) => {
+                debug!("JP {:04X}", addr);
+                self.jump(addr)
+            }
+            Instruction::LD(register, value) => {
+                debug!("LD V{:X}, {:02X}", register, value);
+                self.set_register(register, value);
+            }
+            Instruction::HLT => {
+                debug!("Halting");
+                return CPUIterationDecision::Halt;
+            }
+            other => {
+                todo!("Implement {:?}", other)
+            }
         }
-
-        // 0x1nnn = JP addr nnn
-        if most_significant_byte & 0xf0 == 0x10 {
-            debug!("JP {:04X}", instruction);
-            self.program_counter = instruction & 0x0fff;
-            return CPUIterationDecision::Continue;
-        }
-
-        warn!("Unhandled opcode: {:04X}", instruction);
-
         self.program_counter += 2;
+
         return CPUIterationDecision::Continue;
     }
 }
