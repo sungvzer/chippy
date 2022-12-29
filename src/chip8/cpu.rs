@@ -1,11 +1,15 @@
 pub mod instruction;
+pub mod rng;
 
 use std::{fs::OpenOptions, io::Read, path::PathBuf};
 
 use log::{debug, error, info, warn};
 
 use crate::chip8::{
-    cpu::instruction::{parse_instruction, Instruction},
+    cpu::{
+        instruction::{parse_instruction, Instruction},
+        rng::random_byte,
+    },
     dumper::{dump_cpu, DumpMemory},
 };
 
@@ -139,8 +143,6 @@ impl CPU {
         // Fetch
         let instruction_opcode = self.read_u16_from_memory(self.program_counter as usize);
 
-        debug!("Instruction: {:04x}", instruction_opcode);
-
         // Decode
         let instruction = match parse_instruction(instruction_opcode) {
             Ok(instruction) => instruction,
@@ -163,6 +165,14 @@ impl CPU {
             Instruction::HLT => {
                 debug!("Halting");
                 return CPUIterationDecision::Halt;
+            }
+            Instruction::RND(register, and_mask) => {
+                let byte = random_byte();
+                debug!("RND V{:X}, 0x{:02X} & 0x{:02X}", register, byte, and_mask);
+                self.set_register(register, byte & and_mask);
+            }
+            Instruction::CLS => {
+                debug!("TODO: Implement CLS");
             }
             other => {
                 todo!("Implement {:?}", other)
