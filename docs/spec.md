@@ -262,12 +262,16 @@ Programs may also refer to a group of sprites representing the hexadecimal digit
     ****      11110000  0xF0
     ```
 -   F
-`Text      Binary    Hex
+    ```
+    Text      Binary    Hex
     ****      11110000  0xF0
     *         10000000  0x80
     ****      11110000  0xF0
     *         10000000  0x80
-    *         10000000  0x80`
+    *         10000000  0x80
+    ```
+
+<!-- Separator -->
 </details>
 
 ### 3.5. Timers & Sound
