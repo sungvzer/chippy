@@ -85,9 +85,9 @@ Chip-8 has 16 general purpose 8-bit registers, usually referred to as V*x*, wher
 
 There is also a 16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
 
-The VF register should not be used by any program, as it is used as a flag by some instructions. See section 3.0, [Instructions](#3.0) for details.
+The VF register should not be used by any program, as it is used as a flag by some instructions. See section 4.0, [Instructions](#4-chip-8-instructions) for details.
 
-Chip-8 also has two special purpose 8-bit registers, for the delay and sound timers. When these registers are non-zero, they are automatically decremented at a rate of 60Hz. See the section 2.5, [Timers & Sound](#2.5), for more information on these.
+Chip-8 also has two special purpose 8-bit registers, for the delay and sound timers. When these registers are non-zero, they are automatically decremented at a rate of 60Hz. See the section 3.5, [Timers & Sound](#35-timers--sound), for more information on these.
 
 There are also some "pseudo-registers" which are not accessable from Chip-8 programs. The program counter (PC) should be 16-bit, and is used to store the currently executing address. The stack pointer (SP) can be 8-bit, it is used to point to the topmost level of the stack.
 
@@ -418,12 +418,12 @@ In these listings, the following variables are used:
 -   **C`xkk` - RND V`x`, `byte`**  
     Set V`x` = random `byte` AND `kk`.
 
-    The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are stored in V`x`. See instruction [8`xy`2](#8xy2) for more information on AND.
+    The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The results are stored in V`x`. See instruction 8`xy`2 for more information on AND.
 
 -   **D`xyn` - DRW V`x`, V`y`, `nibble`**  
     Display `n`\-byte sprite starting at memory location I at (V`x`, V`y`), set VF = collision.
 
-    The interpreter reads `n` bytes from memory, starting at the address stored in I. These bytes are then displayed as sprites on screen at coordinates (V`x`, V`y`). Sprites are XORed onto the existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen. See instruction [8`xy`3](#8xy3) for more information on XOR, and section 2.4, [Display](2.4), for more information on the Chip-8 screen and sprites.
+    The interpreter reads `n` bytes from memory, starting at the address stored in I. These bytes are then displayed as sprites on screen at coordinates (V`x`, V`y`). Sprites are XORed onto the existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen. See instruction 8`xy`3 for more information on XOR, and section 3.4, [Display](#34-display), for more information on the Chip-8 screen and sprites.
 
 -   **E`x`9E - SKP V`x`**  
     Skip next instruction if key with the value of V`x` is pressed.
@@ -463,7 +463,7 @@ In these listings, the following variables are used:
 -   **F`x`29 - LD F, V`x`**  
     Set I = location of sprite for digit V`x`.
 
-    The value of I is set to the location for the hexadecimal sprite corresponding to the value of V`x`. See section 2.4, [Display](#2.4), for more information on the Chip-8 hexadecimal font.
+    The value of I is set to the location for the hexadecimal sprite corresponding to the value of V`x`. See section 3.4, [Display](#34-display), for more information on the Chip-8 hexadecimal font.
 
 -   **F`x`33 - LD B, V`x`**  
     Store BCD representation of V`x` in memory locations I, I+1, and I+2.
