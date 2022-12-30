@@ -21,6 +21,12 @@ pub enum Instruction {
     /** LD B, Vx - Load BCD value of Vx into I..I+2 */
     LDB(u8),
 
+    /** LD Vx, \[I\] - Read values from memory starting at location I into registers V0 through Vx. */
+    LDVxFromI(u8),
+
+    /** LD \[I\] Vx - Copy the values of registers V0 through Vx into memory, starting at the address in I */
+    LDIFromVx(u8),
+
     // Non-standard, stops execution
     HLT,
 }
@@ -31,7 +37,17 @@ fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
     let least_significant_byte = instruction & 0x00ff;
 
     if least_significant_byte == 0x33 {
+        // 0xFx33: LD B, Vx
         return Ok(Instruction::LDB(register as u8));
+    }
+
+    if least_significant_byte == 0x65 {
+        // 0xFx65 - LD Vx, [I]
+        return Ok(Instruction::LDVxFromI(register as u8));
+    }
+    if least_significant_byte == 0x55 {
+        // 0xFx55 - LD [I], Vx
+        return Ok(Instruction::LDIFromVx(register as u8));
     }
 
     Err(())

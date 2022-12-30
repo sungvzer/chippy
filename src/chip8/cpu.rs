@@ -198,7 +198,23 @@ impl CPU {
             Instruction::LDB(register) => {
                 debug!("LD B, V{:X}", register);
                 self.copy_register_bcd_into_memory(register);
-                dump_cpu(&self, DumpMemory::Yes);
+            }
+            Instruction::LDIFromVx(register) => {
+                debug!("LD [I], V{:X}", register);
+                let memory = self.memory_location;
+                for i in 0..=register {
+                    let value = self.get_register(i);
+                    let memory_index = (memory + i as u16) as usize;
+                    self.memory[memory_index] = value;
+                }
+            }
+            Instruction::LDVxFromI(register) => {
+                debug!("LD V{:X}, [I]", register);
+                let memory = self.memory_location;
+                for i in 0..=register {
+                    let memory_index = (memory + i as u16) as usize;
+                    self.set_register(i, self.memory[memory_index]);
+                }
             }
             other => {
                 todo!("Implement {:?}", other)
