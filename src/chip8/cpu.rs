@@ -1,5 +1,6 @@
 pub mod instruction;
 pub mod rng;
+pub mod sprites;
 
 use std::{fs::OpenOptions, io::Read, path::PathBuf};
 
@@ -12,6 +13,8 @@ use crate::chip8::{
     },
     dumper::{dump_cpu, DumpMemory},
 };
+
+use self::sprites::get_sprite;
 
 use super::gfx::screen::Screen;
 
@@ -57,14 +60,34 @@ pub struct CPU {
 
 impl CPU {
     pub fn new() -> Self {
-        CPU {
+        let mut cpu = CPU {
             registers: [0x0; 16],
             memory_location: 0x0,
             program_counter: 0x0,
             stack_pointer: 0x0,
             memory: [0xff; 4096],
             screen: Screen::new(),
+        };
+        cpu.initialize_sprites();
+        cpu.clear_screen();
+
+        cpu
+    }
+
+    fn initialize_sprites(&mut self) {
+        for i in 0..=15 {
+            let sprite = get_sprite(i);
+            let index = i * 5;
+            for j in index..index + 5 {
+                let sprite_index = j - index;
+                self.memory[j as usize] = sprite[sprite_index as usize];
+            }
         }
+        debug!("Initialized sprites from address 0x000 to address 0x04F");
+    }
+
+    fn get_sprite_address(&self, sprite: u8) -> u16 {
+        sprite as u16 * 5
     }
 
     fn clear_screen(&mut self) -> () {
