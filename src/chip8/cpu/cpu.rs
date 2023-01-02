@@ -219,6 +219,7 @@ impl CPU {
                 self.set_register(register, byte & and_mask);
             }
             Instruction::CLS => {
+                debug!("CLS");
                 self.clear_screen();
             }
             Instruction::LDB(register) => {
