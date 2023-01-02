@@ -19,7 +19,8 @@ use log::{debug, info};
 #[command(about, long_about = None)]
 struct Cli {
     /// .ch8 file to load program from
-    file: Option<PathBuf>,
+    #[arg(short, long, required = true)]
+    file: PathBuf,
 
     /// Turn debugging information on
     #[arg(short, long)]
@@ -44,9 +45,7 @@ fn main() -> Result<(), String> {
     };
     let mut cpu = CPU::new();
 
-    if let Some(file_name) = args.file {
-        cpu.load_program_from_file(file_name)?;
-    }
+    cpu.load_program_from_file(args.file)?;
 
     while let CPUIterationDecision::Continue = cpu.fetch_decode_execute() {}
 
