@@ -33,21 +33,21 @@ pub enum Instruction {
 
 fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
     // We can give for granted that the instruction starts with 0xFnnn
-    let register = (instruction & 0x0f00) >> 8;
-    let least_significant_byte = instruction & 0x00ff;
+    let register = ((instruction & 0x0f00) >> 8) as u8;
+    let least_significant_byte = (instruction & 0x00ff) as u8;
 
     if least_significant_byte == 0x33 {
         // 0xFx33: LD B, Vx
-        return Ok(Instruction::LDB(register as u8));
+        return Ok(Instruction::LDB(register));
     }
 
     if least_significant_byte == 0x65 {
         // 0xFx65 - LD Vx, [I]
-        return Ok(Instruction::LDVxFromI(register as u8));
+        return Ok(Instruction::LDVxFromI(register));
     }
     if least_significant_byte == 0x55 {
         // 0xFx55 - LD [I], Vx
-        return Ok(Instruction::LDIFromVx(register as u8));
+        return Ok(Instruction::LDIFromVx(register));
     }
 
     Err(())
