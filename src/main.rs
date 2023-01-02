@@ -26,9 +26,6 @@ struct Cli {
     #[arg(short, long)]
     debug: bool,
 
-    /// Enable the screen (should always be on unless you really want to disable it)
-    #[arg(short, long)]
-    gui: bool,
 }
 
 fn main() -> Result<(), String> {
