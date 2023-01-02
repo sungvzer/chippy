@@ -1,9 +1,10 @@
 pub mod chip8;
 
+use chrono::{DateTime, Utc};
 use clap::{arg, command, Parser};
 use fern::colors::{Color, ColoredLevelConfig};
 
-use std::path::PathBuf;
+use std::{path::PathBuf, time::SystemTime};
 
 use chip8::{
     cpu::{CPUIterationDecision, CPU},
@@ -47,6 +48,10 @@ fn log_init(debug_enabled: bool) -> Result<(), log::SetLoggerError> {
         .debug(Color::Blue)
         .error(Color::Red);
 
+    let today: DateTime<Utc> = SystemTime::now().into();
+    let today = today.format("%Y-%m-%d");
+    let filename = format!("log-{}.log", today);
+
     let stdout_dispatcher = fern::Dispatch::new()
         .format(move |out, message, record| {
             out.finish(format_args!(
@@ -71,7 +76,7 @@ fn log_init(debug_enabled: bool) -> Result<(), log::SetLoggerError> {
                 message
             ))
         })
-        .chain(fern::log_file("persistent-log.log").unwrap());
+        .chain(fern::log_file(filename).unwrap());
 
     fern::Dispatch::new()
         // Ignore non-interesting logs from other sources
