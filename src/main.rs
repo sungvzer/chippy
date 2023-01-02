@@ -11,7 +11,7 @@ use chip8::{
     gfx::screen::Screen,
 };
 
-use log::{error, info};
+use log::{debug, error, info};
 use pixels::{Pixels, SurfaceTexture};
 use winit::{
     dpi::LogicalSize,
@@ -156,6 +156,7 @@ fn run_gui() -> Result<(), pixels::Error> {
 
 fn main() -> Result<(), String> {
     let args = Cli::parse();
+    debug!("Parsed CLI arguments");
 
     match log_init(args.debug) {
         Ok(()) => {
