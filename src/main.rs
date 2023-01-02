@@ -8,7 +8,6 @@ use std::{path::PathBuf, time::SystemTime};
 
 use chip8::{
     cpu::{CPUIterationDecision, CPU},
-    dumper::{dump_cpu, DumpMemory},
     gfx::screen::Screen,
 };
 
@@ -170,7 +169,6 @@ fn main() -> Result<(), String> {
 
     if let Some(file_name) = args.file {
         cpu.load_program_from_file(file_name)?;
-        dump_cpu(&cpu, DumpMemory::Yes);
     }
 
     while let CPUIterationDecision::Continue = cpu.fetch_decode_execute() {}
