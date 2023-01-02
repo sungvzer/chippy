@@ -249,7 +249,7 @@ impl CPU {
                 self.memory_location = sprite_start;
             }
             other => {
-                todo!("Implement {:?}", other)
+                debug!("TODO: Implement {:?}", other);
             }
         }
         self.program_counter += 2;
