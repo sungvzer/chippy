@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+#![deny(clippy::all)]
 pub mod chip8;
 
 use chrono::{DateTime, Utc};
