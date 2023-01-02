@@ -33,6 +33,9 @@ pub enum Instruction {
     /** DRW Vx, Vy, bytes - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision */
     DRW(u8, u8, u8),
 
+    /** ADD Vx, byte - Adds the value `kk` to the value of register Vx, then stores the result in V`x`. */
+    ADD(u8, u8),
+
     // Non-standard, stops execution
     HLT,
 }
@@ -99,6 +102,13 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
         let register_index = most_significant_byte & 0x0f;
         let value = least_significant_byte;
         return Ok(Instruction::LD(register_index, value));
+    }
+
+    if most_significant_byte & 0xf0 == 0x70 {
+        // 0x7xkk = LD Vx, kk
+        let register_index = most_significant_byte & 0x0f;
+        let value = least_significant_byte;
+        return Ok(Instruction::ADD(register_index, value));
     }
 
     if most_significant_byte & 0xf0 == 0xA0 {

@@ -217,6 +217,12 @@ impl CPU {
                 debug!("LD V{:X}, {:02X}", register, value);
                 self.set_register(register, value);
             }
+            Instruction::ADD(register, value) => {
+                debug!("ADD V{:X}, {:02X}", register, value);
+                let result = self.get_register(register) + value;
+
+                self.set_register(register, result);
+            }
             Instruction::HLT => {
                 debug!("Halting");
                 return CPUIterationDecision::Halt;
