@@ -10,11 +10,6 @@ edition = "2021"
 log = "^0.4.17"
 fern = { version = "^0.6.1", features = ["colored"] }
 
-# GFX
-pixels = "^0.11.0"
-winit = "^0.27.5"
-winit_input_helper = "0.13.0"
-
 # RNG
 rand = "^0.8.5"
 
