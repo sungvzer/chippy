@@ -54,6 +54,14 @@ pub struct CPU {
 }
 
 impl CPU {
+    pub fn screen(&self) -> &Screen {
+        &self.screen
+    }
+
+    pub fn screen_mut(&mut self) -> &mut Screen {
+        &mut self.screen
+    }
+
     pub fn new() -> Self {
         let mut cpu = CPU {
             registers: [0x0; 16],
@@ -248,6 +256,21 @@ impl CPU {
                 let sprite = self.get_register(register);
                 let sprite_start = self.get_sprite_address(sprite);
                 self.memory_location = sprite_start;
+            }
+            Instruction::DRW(x, y, byte_length) => {
+                debug!("DRW V{:X}, V{:X}, {:X}", x, y, byte_length);
+
+                // usize casting
+                let x = self.get_register(x) as usize;
+                let y = self.get_register(y) as usize;
+                let byte_length = byte_length as usize;
+                let sprite_address = self.memory_location as usize;
+                let range = sprite_address..(sprite_address + byte_length);
+
+                let sprite = &self.memory[range];
+                let did_erase = self.screen.draw_sprite(x, y, &sprite.to_vec());
+                self.set_register(VF, if did_erase { 1 } else { 0 });
+                debug!("Drawn sprite to screen");
             }
             other => {
                 debug!("TODO: Implement {:?}", other);
