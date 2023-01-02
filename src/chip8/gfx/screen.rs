@@ -21,7 +21,7 @@ impl Screen {
             r: 0,
             g: 0,
             b: 0,
-            a: 0,
+            a: 255,
         };
         Screen {
             buffer: [pixel; Screen::WIDTH * Screen::HEIGHT],
@@ -43,17 +43,17 @@ impl Screen {
         self.buffer.fill(pixel);
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, r: u8, g: u8, b: u8, a: u8) {
+    pub fn set_pixel(&mut self, x: usize, y: usize, filled: bool) {
         let mut index: usize = Screen::WIDTH;
         index *= y;
         index += x;
 
         let pixel = &mut self.buffer[index];
 
-        pixel.r = r;
-        pixel.g = g;
-        pixel.b = b;
-        pixel.a = a;
+        pixel.r = if filled { 255 } else { 0 };
+        pixel.g = if filled { 255 } else { 0 };
+        pixel.b = if filled { 255 } else { 0 };
+        pixel.a = 255;
     }
 
     pub fn draw(&self, frame: &mut [u8]) {
