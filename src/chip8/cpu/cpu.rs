@@ -245,7 +245,8 @@ impl CPU {
             }
             Instruction::LDF(register) => {
                 debug!("LD F, V{:X}", register);
-                let sprite_start = self.get_sprite_address(register);
+                let sprite = self.get_register(register);
+                let sprite_start = self.get_sprite_address(sprite);
                 self.memory_location = sprite_start;
             }
             other => {
