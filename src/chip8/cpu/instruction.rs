@@ -27,6 +27,9 @@ pub enum Instruction {
     /** LD \[I\] Vx - Copy the values of registers V0 through Vx into memory, starting at the address in I */
     LDIFromVx(u8),
 
+    /** LD F, Vx - Set I = location of sprite for digit Vx */
+    LDF(u8),
+
     // Non-standard, stops execution
     HLT,
 }
@@ -35,6 +38,11 @@ fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
     // We can give for granted that the instruction starts with 0xFnnn
     let register = ((instruction & 0x0f00) >> 8) as u8;
     let least_significant_byte = (instruction & 0x00ff) as u8;
+
+    if least_significant_byte == 0x29 {
+        // 0xFx29: LD F, Vx
+        return Ok(Instruction::LDF(register));
+    }
 
     if least_significant_byte == 0x33 {
         // 0xFx33: LD B, Vx

@@ -248,6 +248,11 @@ impl CPU {
                     self.set_register(i, self.memory[memory_index]);
                 }
             }
+            Instruction::LDF(register) => {
+                debug!("LD F, V{:X}", register);
+                let sprite_start = self.get_sprite_address(register);
+                self.memory_location = sprite_start;
+            }
             other => {
                 todo!("Implement {:?}", other)
             }
