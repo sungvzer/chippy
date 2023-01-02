@@ -6,7 +6,7 @@ use fern::colors::{Color, ColoredLevelConfig};
 
 use std::{path::PathBuf, time::SystemTime};
 
-use chip8::cpu::{CPUIterationDecision, CPU};
+use chip8::cpu::cpu::{CPUIterationDecision, CPU};
 
 use log::{debug, info};
 

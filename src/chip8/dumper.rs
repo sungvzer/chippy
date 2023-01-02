@@ -9,7 +9,7 @@ use std::{
 
 use log::{debug, error};
 
-use super::cpu::CPU;
+use super::cpu::cpu::CPU;
 
 #[derive(PartialEq, Eq)]
 pub enum DumpMemory {

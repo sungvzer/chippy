@@ -1,7 +1,4 @@
-pub mod instruction;
-pub mod rng;
-pub mod sprites;
-
+use crate::chip8::{cpu::sprites::get_sprite, gfx::screen::Screen};
 use std::{fs::OpenOptions, io::Read, path::PathBuf};
 
 use log::{debug, error, info, warn};
@@ -14,9 +11,7 @@ use crate::chip8::{
     dumper::{dump_cpu, DumpMemory},
 };
 
-use self::{instruction::InstructionParseResult, sprites::get_sprite};
-
-use super::gfx::screen::Screen;
+use super::instruction::InstructionParseResult;
 
 type Register = u8;
 

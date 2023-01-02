@@ -30,6 +30,9 @@ pub enum Instruction {
     /** LD F, Vx - Set I = location of sprite for digit Vx */
     LDF(u8),
 
+    /** DRW Vx, Vy, bytes - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision */
+    DRW(u8, u8, u8),
+
     // Non-standard, stops execution
     HLT,
 }
