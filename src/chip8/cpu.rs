@@ -13,6 +13,8 @@ use crate::chip8::{
     dumper::{dump_cpu, DumpMemory},
 };
 
+use super::gfx::screen::Screen;
+
 type Register = u8;
 
 pub const V0: Register = 0x0;
@@ -49,6 +51,8 @@ pub struct CPU {
     program_counter: u16,
 
     stack_pointer: u8,
+
+    screen: Screen,
 }
 
 impl CPU {
@@ -59,7 +63,12 @@ impl CPU {
             program_counter: 0x0,
             stack_pointer: 0x0,
             memory: [0xff; 4096],
+            screen: Screen::new(),
         }
+    }
+
+    fn clear_screen(&mut self) -> () {
+        self.screen.clear();
     }
 
     pub fn load_program_from_file(&mut self, file_path: PathBuf) -> Result<usize, String> {
@@ -193,7 +202,7 @@ impl CPU {
                 self.set_register(register, byte & and_mask);
             }
             Instruction::CLS => {
-                debug!("TODO: Implement CLS");
+                self.clear_screen();
             }
             Instruction::LDB(register) => {
                 debug!("LD B, V{:X}", register);

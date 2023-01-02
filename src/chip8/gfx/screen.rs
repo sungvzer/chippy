@@ -28,6 +28,17 @@ impl Screen {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.fill({
+            Pixel {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 255,
+            }
+        })
+    }
+
     pub fn fill(&mut self, pixel: Pixel) {
         self.buffer.fill(pixel);
     }
