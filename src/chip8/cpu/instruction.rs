@@ -34,7 +34,9 @@ pub enum Instruction {
     HLT,
 }
 
-fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
+fn parse_f_instruction(instruction: u16) -> InstructionParseResult {
+    use InstructionParseResult::{Ok, Unparsed};
+
     // We can give for granted that the instruction starts with 0xFnnn
     let register = ((instruction & 0x0f00) >> 8) as u8;
     let least_significant_byte = (instruction & 0x00ff) as u8;
@@ -58,10 +60,17 @@ fn parse_f_instruction(instruction: u16) -> Result<Instruction, ()> {
         return Ok(Instruction::LDIFromVx(register));
     }
 
-    Err(())
+    Unparsed
 }
 
-pub fn parse_instruction(instruction: u16) -> Result<Instruction, ()> {
+pub enum InstructionParseResult {
+    Ok(Instruction),
+    Unparsed,
+}
+
+pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
+    use InstructionParseResult::{Ok, Unparsed};
+
     // Parse "whole" instructions
     if instruction == 0x00E0 {
         return Ok(Instruction::CLS);
@@ -101,10 +110,19 @@ pub fn parse_instruction(instruction: u16) -> Result<Instruction, ()> {
         let bit_mask = least_significant_byte;
         return Ok(Instruction::RND(register_index, bit_mask));
     }
+
+    if most_significant_byte & 0xf0 == 0xD0 {
+        // 0xDxyn = DRW Vx, Vy, sprite length
+        let sprite_length = least_significant_byte & 0x0f;
+        let x = most_significant_byte & 0x0f;
+        let y = least_significant_byte & 0xf0 >> 4;
+        return Ok(Instruction::DRW(x, y, sprite_length));
+    }
+
     if most_significant_byte & 0xf0 == 0xF0 {
         // 0xFnnn, needs more parsing
         return parse_f_instruction(instruction);
     }
 
-    Err(())
+    Unparsed
 }

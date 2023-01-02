@@ -93,7 +93,7 @@ fn main() -> Result<(), String> {
             info!("Logger setup successfully")
         }
         Err(error) => {
-            println!("Could not setup logger: {}", error.to_string())
+            println!("Could not setup logger: {}", error)
         }
     };
     let mut cpu = CPU::new();

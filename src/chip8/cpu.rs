@@ -14,7 +14,7 @@ use crate::chip8::{
     dumper::{dump_cpu, DumpMemory},
 };
 
-use self::sprites::get_sprite;
+use self::{instruction::InstructionParseResult, sprites::get_sprite};
 
 use super::gfx::screen::Screen;
 
@@ -90,7 +90,7 @@ impl CPU {
         sprite as u16 * 5
     }
 
-    fn clear_screen(&mut self) -> () {
+    fn clear_screen(&mut self) {
         self.screen.clear();
     }
 
@@ -147,11 +147,10 @@ impl CPU {
     }
 
     pub fn registers(&self) -> [u8; 16] {
-        let reg = self.registers.to_owned();
-        reg
+        self.registers.to_owned()
     }
 
-    pub fn set_register(&mut self, register: Register, value: u8) -> () {
+    pub fn set_register(&mut self, register: Register, value: u8) {
         self.registers[register as usize] = value;
     }
 
@@ -192,9 +191,9 @@ impl CPU {
 
         // Decode
         let instruction = match parse_instruction(instruction_opcode) {
-            Ok(instruction) => instruction,
-            Err(_) => {
-                dump_cpu(&self, DumpMemory::No);
+            InstructionParseResult::Ok(instruction) => instruction,
+            InstructionParseResult::Unparsed => {
+                dump_cpu(self, DumpMemory::No);
                 let string = format!("Un-parsed opcode: {:04X}", instruction_opcode);
                 error!("{}", string);
                 todo!("{}", string);
@@ -259,6 +258,12 @@ impl CPU {
         }
         self.program_counter += 2;
 
-        return CPUIterationDecision::Continue;
+        CPUIterationDecision::Continue
+    }
+}
+
+impl Default for CPU {
+    fn default() -> Self {
+        Self::new()
     }
 }

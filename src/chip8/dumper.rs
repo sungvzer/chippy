@@ -1,6 +1,8 @@
+use std::fmt::Write;
+use std::io::ErrorKind;
+use std::panic;
 use std::{
     fs::{create_dir, OpenOptions},
-    io::Write,
     path::Path,
     time::SystemTime,
 };
@@ -26,32 +28,34 @@ pub fn dump_cpu(cpu: &CPU, should_dump_memory: DumpMemory) {
     dump_registers(cpu);
 }
 
-fn dump_registers(cpu: &CPU) -> () {
+fn dump_registers(cpu: &CPU) {
     let registers = cpu.registers();
     debug!("Registers");
     let mut str = "".to_string();
-    for i in 0..registers.len() {
-        let mut formatted = format!("V{:X} = 0x{:02x}", i, registers[i]);
+    for (i, register) in registers.iter().enumerate() {
+        let mut formatted = format!("V{:X} = 0x{:02x}", i, register);
         formatted += ", ";
         str.push_str(&formatted);
     }
 
-    str.push_str(&format!("SP = 0x{:02x}, ", cpu.stack_pointer()));
-    str.push_str(&format!("PC = 0x{:02x}, ", cpu.program_counter()));
-    str.push_str(&format!("I = 0x{:02x}", cpu.memory_location()));
+    write!(&mut str, "SP = 0x{:02x}, ", cpu.stack_pointer()).unwrap();
+    write!(&mut str, "PC = 0x{:02x}, ", cpu.program_counter()).unwrap();
+
+    write!(&mut str, "I = 0x{:02x}", cpu.memory_location()).unwrap();
 
     debug!("{}", str);
 }
 
-fn dump_memory(cpu: &CPU) -> () {
+fn dump_memory(cpu: &CPU) {
     let dir = std::env::temp_dir();
 
     let dir = dir.join(Path::new("chip8-dump"));
 
     let dir_string = dir.to_str().unwrap().to_string();
-    match create_dir(dir_string.as_str()) {
-        Ok(_) => {}
-        Err(_) => {}
+    if let Err(error) = create_dir(dir_string.as_str()) {
+        if error.kind() != ErrorKind::AlreadyExists {
+            panic!("{}", error);
+        }
     };
 
     let file_name = format!("{}.bin", get_time_str());
@@ -70,7 +74,7 @@ fn dump_memory(cpu: &CPU) -> () {
     };
 
     let mem = cpu.memory();
-    match file.write(mem) {
+    match std::io::Write::write(&mut file, mem) {
         Ok(_) => {
             debug!("Dumped memory successfully");
         }
