@@ -207,7 +207,8 @@ impl CPU {
         match instruction {
             Instruction::JP(addr) => {
                 debug!("JP {:04X}", addr);
-                self.jump(addr)
+                self.jump(addr);
+                return CPUIterationDecision::Continue;
             }
             Instruction::LDI(addr) => {
                 debug!("LD I, {:04X}", addr);
