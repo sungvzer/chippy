@@ -1,7 +1,11 @@
-use crate::chip8::{cpu::sprites::get_sprite, gfx::screen::Screen};
+use crate::chip8::{
+    cpu::{keyboard::key_code_to_u8, sprites::get_sprite},
+    gfx::screen::Screen,
+};
 use std::{fs::OpenOptions, io::Read, path::PathBuf};
 
 use log::{debug, error, info, warn};
+use tao::keyboard::KeyCode;
 
 use crate::chip8::{
     cpu::{
@@ -50,6 +54,11 @@ pub struct CPU {
 
     stack_pointer: u8,
 
+    /// Stores the currently pressed key
+    active_key_code: Option<KeyCode>,
+
+    waiting_for_key_press: bool,
+
     screen: Screen,
 }
 
@@ -70,6 +79,8 @@ impl CPU {
             stack_pointer: 0x0,
             memory: [0xff; 4096],
             screen: Screen::new(),
+            active_key_code: None,
+            waiting_for_key_press: false,
         };
         cpu.initialize_sprites();
         cpu.clear_screen();
@@ -188,7 +199,15 @@ impl CPU {
         self.program_counter = addr;
     }
 
+    pub fn set_key_pressed(&mut self, key: Option<KeyCode>) {
+        self.active_key_code = key;
+    }
+
     pub fn fetch_decode_execute(&mut self) -> CPUIterationDecision {
+        if self.waiting_for_key_press && self.active_key_code == Option::None {
+            return CPUIterationDecision::Continue;
+        }
+
         // Fetch
         let instruction_opcode = self.read_u16_from_memory(self.program_counter as usize);
 
@@ -248,6 +267,17 @@ impl CPU {
                     let value = self.get_register(i);
                     let memory_index = (memory + i as u16) as usize;
                     self.memory[memory_index] = value;
+                }
+            }
+            Instruction::LDVxFromK(register) => {
+                debug!("LD V{:X}, K", register);
+                if let Some(key) = self.active_key_code {
+                    debug!("Key pressed! {:?}", key);
+                    self.set_register(register, key_code_to_u8(key));
+                    self.waiting_for_key_press = false;
+                } else {
+                    self.waiting_for_key_press = true;
+                    return CPUIterationDecision::Continue;
                 }
             }
             Instruction::LDVxFromI(register) => {

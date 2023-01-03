@@ -24,6 +24,9 @@ pub enum Instruction {
     /** LD Vx, \[I\] - Read values from memory starting at location I into registers V0 through Vx. */
     LDVxFromI(u8),
 
+    /** LD Vx, K - Wait for a key press, store the value of the key in Vx. */
+    LDVxFromK(u8),
+
     /** LD \[I\] Vx - Copy the values of registers V0 through Vx into memory, starting at the address in I */
     LDIFromVx(u8),
 
@@ -46,6 +49,11 @@ fn parse_f_instruction(instruction: u16) -> InstructionParseResult {
     // We can give for granted that the instruction starts with 0xFnnn
     let register = ((instruction & 0x0f00) >> 8) as u8;
     let least_significant_byte = (instruction & 0x00ff) as u8;
+
+    if least_significant_byte == 0x0A {
+        // 0xFx0A, LD Vx, K
+        return Ok(Instruction::LDVxFromK(register));
+    }
 
     if least_significant_byte == 0x29 {
         // 0xFx29: LD F, Vx

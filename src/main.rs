@@ -7,7 +7,7 @@ use clap::{arg, command, Parser};
 use pixels::{Pixels, SurfaceTexture};
 use tao::{
     dpi::LogicalSize,
-    event::{Event, WindowEvent},
+    event::{ElementState, Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     keyboard::KeyCode,
     menu::{MenuBar, MenuItem},
@@ -16,7 +16,10 @@ use tao::{
 
 use std::path::PathBuf;
 
-use chip8::cpu::cpu::{CPUIterationDecision, CPU};
+use chip8::cpu::{
+    cpu::{CPUIterationDecision, CPU},
+    keyboard::is_relevant_key_code,
+};
 
 use log::{debug, info};
 
@@ -60,7 +63,12 @@ fn create_window(width: f64, height: f64, event_loop: &EventLoop<()>) -> Window 
         .unwrap()
 }
 
-fn handle_window_event(event: WindowEvent, pixels: &mut Pixels, control_flow: &mut ControlFlow) {
+fn handle_window_event(
+    event: WindowEvent,
+    pixels: &mut Pixels,
+    control_flow: &mut ControlFlow,
+    cpu: &mut CPU,
+) {
     match event {
         WindowEvent::Resized(size) => {
             pixels.resize_surface(size.width, size.height).unwrap();
@@ -72,6 +80,14 @@ fn handle_window_event(event: WindowEvent, pixels: &mut Pixels, control_flow: &m
             if event.physical_key == KeyCode::Escape {
                 *control_flow = ControlFlow::Exit;
             }
+
+            let relevant = is_relevant_key_code(event.physical_key);
+
+            if event.state == ElementState::Released || !relevant {
+                cpu.set_key_pressed(None);
+            } else {
+                cpu.set_key_pressed(Some(event.physical_key));
+            };
         }
 
         _ => {}
@@ -110,7 +126,7 @@ fn main() -> Result<(), String> {
     event_loop.run(move |event, _target, control_flow| {
         match event {
             Event::WindowEvent { event, .. } => {
-                handle_window_event(event, &mut pixels, control_flow);
+                handle_window_event(event, &mut pixels, control_flow, &mut cpu);
             }
             Event::MainEventsCleared => {
                 if let CPUIterationDecision::Halt = cpu.fetch_decode_execute() {
