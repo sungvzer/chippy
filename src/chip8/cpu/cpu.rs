@@ -45,6 +45,7 @@ pub struct CPU {
     memory: [u8; 4096], // TODO: Maybe move to a different struct and datatype
 
     registers: [u8; 16],
+    stack: [u16; 16],
 
     /// NOTE: Only 12 bits are used for this
     memory_location: u16,
@@ -81,6 +82,7 @@ impl CPU {
             screen: Screen::new(),
             active_key_code: None,
             waiting_for_key_press: false,
+            stack: [0x0; 16],
         };
         cpu.initialize_sprites();
         cpu.clear_screen();
@@ -199,6 +201,19 @@ impl CPU {
         self.program_counter = addr;
     }
 
+    fn call(&mut self, addr: u16) {
+        self.stack[self.stack_pointer as usize] = self.program_counter;
+        self.stack_pointer += 1;
+
+        self.program_counter = addr;
+    }
+
+    fn ret(&mut self) {
+        let index = (self.stack_pointer - 1) as usize;
+        self.program_counter = self.stack[index];
+        self.stack_pointer -= 1;
+    }
+
     pub fn set_key_pressed(&mut self, key: Option<KeyCode>) {
         self.active_key_code = key;
     }
@@ -224,9 +239,18 @@ impl CPU {
 
         // Execute
         match instruction {
+            Instruction::RET => {
+                self.ret();
+                return CPUIterationDecision::Continue;
+            }
             Instruction::JP(addr) => {
                 debug!("JP {:04X}", addr);
                 self.jump(addr);
+                return CPUIterationDecision::Continue;
+            }
+            Instruction::CALL(addr) => {
+                debug!("CALL {:04X}", addr);
+                self.call(addr);
                 return CPUIterationDecision::Continue;
             }
             Instruction::LDI(addr) => {

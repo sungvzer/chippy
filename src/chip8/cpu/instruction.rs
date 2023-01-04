@@ -9,6 +9,9 @@ pub enum Instruction {
     /** RET */
     RET,
 
+    /** CALL nnn - Call subroutine at nnn */
+    CALL(u16),
+
     /** SE Vx, byte - Skip next instruction if Vx == byte */
     SE(u8, u8),
 
@@ -123,6 +126,10 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
     if most_significant_byte & 0xf0 == 0x10 {
         // 0x1nnn = JP nnn
         return Ok(Instruction::JP(instruction & 0xfff));
+    }
+    if most_significant_byte & 0xf0 == 0x20 {
+        // 0x2nnn = CALL nnn
+        return Ok(Instruction::CALL(instruction & 0xfff));
     }
     if most_significant_byte & 0xf0 == 0x30 {
         // 0x3xkk = SE Vx, kk
