@@ -240,6 +240,7 @@ impl CPU {
         // Execute
         match instruction {
             Instruction::RET => {
+                debug!("RET");
                 self.ret();
                 return CPUIterationDecision::Continue;
             }
