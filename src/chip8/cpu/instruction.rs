@@ -15,6 +15,9 @@ pub enum Instruction {
     /** SE Vx, byte - Skip next instruction if Vx == byte */
     SE(u8, u8),
 
+    /** SNE Vx, byte - Skip next instruction if Vx != byte */
+    SNE(u8, u8),
+
     /** LD Vx, byte */
     LD(u8, u8),
 
@@ -136,6 +139,12 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
         let register_index = most_significant_byte & 0x0f;
         let value = least_significant_byte;
         return Ok(Instruction::SE(register_index, value));
+    }
+    if most_significant_byte & 0xf0 == 0x40 {
+        // 0x3xkk = SE Vx, kk
+        let register_index = most_significant_byte & 0x0f;
+        let value = least_significant_byte;
+        return Ok(Instruction::SNE(register_index, value));
     }
     if most_significant_byte & 0xf0 == 0x60 {
         // 0x6xkk = LD Vx, kk

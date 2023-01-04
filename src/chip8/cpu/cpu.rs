@@ -340,6 +340,12 @@ impl CPU {
                     self.program_counter += 2;
                 }
             }
+            Instruction::SNE(register, value) => {
+                debug!("SNE V{:X}, {:02X}", register, value);
+                if self.get_register(register) != value {
+                    self.program_counter += 2;
+                }
+            }
             Instruction::LDVxFromVy(x, y) => {
                 debug!("LD V{:X}, V{:X}", x, y);
                 self.set_register(x, self.get_register(y));
