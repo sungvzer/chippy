@@ -309,6 +309,12 @@ impl CPU {
                 self.set_register(VF, if did_erase { 1 } else { 0 });
                 debug!("Drawn sprite to screen");
             }
+            Instruction::SE(register, value) => {
+                debug!("SE V{:X}, {:02X}", register, value);
+                if self.get_register(register) == value {
+                    self.program_counter += 2;
+                }
+            }
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
