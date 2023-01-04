@@ -263,7 +263,8 @@ impl CPU {
             }
             Instruction::ADD(register, value) => {
                 debug!("ADD V{:X}, {:02X}", register, value);
-                let result = self.get_register(register) + value;
+                let register_value = self.get_register(register);
+                let result = register_value.wrapping_add(value);
 
                 self.set_register(register, result);
             }
