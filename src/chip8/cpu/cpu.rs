@@ -242,7 +242,6 @@ impl CPU {
             Instruction::RET => {
                 debug!("RET");
                 self.ret();
-                return CPUIterationDecision::Continue;
             }
             Instruction::JP(addr) => {
                 debug!("JP {:04X}", addr);
