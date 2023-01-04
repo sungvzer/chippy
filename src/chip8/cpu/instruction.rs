@@ -24,6 +24,9 @@ pub enum Instruction {
     /** LD B, Vx - Load BCD value of Vx into I..I+2 */
     LDB(u8),
 
+    /** Stores the value of register Vy in register Vx */
+    LDVxFromVy(u8, u8),
+
     /** LD Vx, \[I\] - Read values from memory starting at location I into registers V0 through Vx. */
     LDVxFromI(u8),
 
@@ -44,6 +47,19 @@ pub enum Instruction {
 
     // Non-standard, stops execution
     HLT,
+}
+
+fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
+    // Every instruction has the format 8xyN
+    use InstructionParseResult::{Ok, Unparsed};
+    let x = ((instruction & 0x0f00) >> 8) as u8;
+    let y = ((instruction & 0x00f0) >> 4) as u8;
+    let kind = (instruction & 0x000f) as u8;
+
+    match kind {
+        0 => Ok(Instruction::LDVxFromVy(x, y)),
+        _ => Unparsed,
+    }
 }
 
 fn parse_f_instruction(instruction: u16) -> InstructionParseResult {
@@ -126,6 +142,10 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
         let register_index = most_significant_byte & 0x0f;
         let value = least_significant_byte;
         return Ok(Instruction::ADD(register_index, value));
+    }
+    if most_significant_byte & 0xf0 == 0x80 {
+        // 0x8xyN, needs more parsing
+        return parse_8_instruction(instruction);
     }
 
     if most_significant_byte & 0xf0 == 0xA0 {

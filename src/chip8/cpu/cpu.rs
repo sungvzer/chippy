@@ -315,6 +315,10 @@ impl CPU {
                     self.program_counter += 2;
                 }
             }
+            Instruction::LDVxFromVy(x, y) => {
+                debug!("LD V{:X}, V{:X}", x, y);
+                self.set_register(x, self.get_register(y));
+            }
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
