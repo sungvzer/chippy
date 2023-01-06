@@ -62,6 +62,9 @@ pub enum Instruction {
 
     // Non-standard, stops execution
     HLT,
+
+    /** AND Vx, Vy - Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. */
+    AND(u8, u8),
 }
 
 fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
@@ -73,6 +76,7 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
 
     match kind {
         0 => Ok(Instruction::LDVxFromVy(x, y)),
+        2 => Ok(Instruction::AND(x, y)),
         _ => Unparsed,
     }
 }

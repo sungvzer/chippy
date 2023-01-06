@@ -378,6 +378,12 @@ impl CPU {
                 let value = self.delay_timer.get_value();
                 self.set_register(register, value);
             }
+            Instruction::AND(x, y) => {
+                debug!("AND V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+                self.set_register(x, vx & vy);
+            }
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
