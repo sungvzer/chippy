@@ -15,7 +15,10 @@ use crate::chip8::{
     dumper::{dump_cpu, DumpMemory},
 };
 
-use super::instruction::InstructionParseResult;
+use super::{
+    instruction::InstructionParseResult,
+    timer::{delay_timer::DelayTimer, sound_timer::SoundTimer, timer::Timer},
+};
 
 type Register = u8;
 
@@ -61,9 +64,17 @@ pub struct CPU {
     waiting_for_key_press: bool,
 
     screen: Screen,
+
+    delay_timer: DelayTimer,
+    sound_timer: SoundTimer,
 }
 
 impl CPU {
+    pub fn tick(&mut self, _: u64) {
+        self.sound_timer.tick();
+        self.delay_timer.tick();
+    }
+
     pub fn screen(&self) -> &Screen {
         &self.screen
     }
@@ -83,6 +94,8 @@ impl CPU {
             active_key_code: None,
             waiting_for_key_press: false,
             stack: [0x0; 16],
+            delay_timer: DelayTimer::new(),
+            sound_timer: SoundTimer::new(),
         };
         cpu.initialize_sprites();
         cpu.clear_screen();
@@ -349,6 +362,21 @@ impl CPU {
             Instruction::LDVxFromVy(x, y) => {
                 debug!("LD V{:X}, V{:X}", x, y);
                 self.set_register(x, self.get_register(y));
+            }
+            Instruction::LDDTFromVx(register) => {
+                debug!("LD DT, V{:X}", register);
+                let value = self.get_register(register);
+                self.delay_timer.set_value(value);
+            }
+            Instruction::LDSTFromVx(register) => {
+                debug!("LD ST, V{:X}", register);
+                let value = self.get_register(register);
+                self.sound_timer.set_value(value);
+            }
+            Instruction::LDVxFromDT(register) => {
+                debug!("LD V{:X}, DT", register);
+                let value = self.delay_timer.get_value();
+                self.set_register(register, value);
             }
             other => {
                 debug!("TODO: Implement {:?}", other);

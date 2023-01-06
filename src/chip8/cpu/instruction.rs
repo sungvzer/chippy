@@ -42,6 +42,15 @@ pub enum Instruction {
     /** LD \[I\] Vx - Copy the values of registers V0 through Vx into memory, starting at the address in I */
     LDIFromVx(u8),
 
+    /** LD DT, Vx - Set delay timer = Vx */
+    LDDTFromVx(u8),
+
+    /** LD ST, Vx - Set sound timer = Vx */
+    LDSTFromVx(u8),
+
+    /** LD Vx, DT - Set Vx = delay timer */
+    LDVxFromDT(u8),
+
     /** LD F, Vx - Set I = location of sprite for digit Vx */
     LDF(u8),
 
@@ -75,9 +84,24 @@ fn parse_f_instruction(instruction: u16) -> InstructionParseResult {
     let register = ((instruction & 0x0f00) >> 8) as u8;
     let least_significant_byte = (instruction & 0x00ff) as u8;
 
+    if least_significant_byte == 0x07 {
+        // 0xFx07, LD Vx, DT
+        return Ok(Instruction::LDVxFromDT(register));
+    }
+
     if least_significant_byte == 0x0A {
         // 0xFx0A, LD Vx, K
         return Ok(Instruction::LDVxFromK(register));
+    }
+
+    if least_significant_byte == 0x15 {
+        // 0xFx15, LD DT, Vx
+        return Ok(Instruction::LDDTFromVx(register));
+    }
+
+    if least_significant_byte == 0x18 {
+        // 0xFx18, LD ST, Vx
+        return Ok(Instruction::LDSTFromVx(register));
     }
 
     if least_significant_byte == 0x29 {
