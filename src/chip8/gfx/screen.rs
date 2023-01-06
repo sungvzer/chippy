@@ -38,9 +38,13 @@ impl Screen {
     pub fn draw_sprite(&mut self, x: usize, mut y: usize, sprite: &Vec<u8>) -> bool {
         let mut did_erase_pixel = false;
 
+        // For every byte (0b01010101)
         for byte in sprite {
             for j in 0..8 {
+                // Get a single bit and draw it on screen
                 let filled = (byte & (1 << j)) != 0;
+
+                // Order is reversed (LSb to MSb) so start from x + 7 to x + 0
                 did_erase_pixel = did_erase_pixel || self.set_pixel(x + (7 - j), y, filled);
             }
 

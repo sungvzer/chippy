@@ -411,6 +411,17 @@ impl CPU {
                     self.program_counter += 2;
                 }
             }
+            Instruction::SUB(x, y) => {
+                debug!("SUB V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+
+                let not_borrow: u8 = if vx > vy { 1 } else { 0 };
+                self.set_register(VF, not_borrow);
+
+                let sub_result = vx.wrapping_sub(vy);
+                self.set_register(x, sub_result);
+            }
 
             other => {
                 debug!("TODO: Implement {:?}", other);

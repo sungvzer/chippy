@@ -74,6 +74,9 @@ pub enum Instruction {
 
     /** SKNP Vx - Skip next instruction if key with the value of Vx is not pressed. */
     SKNP(u8),
+
+    /** SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow */
+    SUB(u8, u8),
 }
 
 fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
@@ -86,6 +89,7 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
     match kind {
         0 => Ok(Instruction::LDVxFromVy(x, y)),
         2 => Ok(Instruction::AND(x, y)),
+        5 => Ok(Instruction::SUB(x, y)),
         _ => Unparsed,
     }
 }
