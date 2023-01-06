@@ -401,7 +401,7 @@ impl CPU {
         CPUIterationDecision::Continue
     }
 
-    pub fn force_audio_stop(&self) -> () {
+    pub fn force_audio_stop(&self) {
         self.sound_timer.force_audio_stop();
     }
 }

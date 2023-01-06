@@ -51,7 +51,7 @@ impl Sound {
         };
     }
 
-    pub fn run<T>(&mut self, device: &cpal::Device, config: &cpal::StreamConfig) -> ()
+    pub fn run<T>(&mut self, device: &cpal::Device, config: &cpal::StreamConfig)
     where
         T: cpal::Sample,
     {
@@ -81,14 +81,14 @@ impl Sound {
         loop {
             if let Ok(message) = self.message_rx.try_recv() {
                 match message {
-                    SoundMessage::Play if self.playing == false => {
+                    SoundMessage::Play if !self.playing => {
                         debug!("Received play message");
                         stream.play().unwrap_or_else(|err| {
                             error!("Error with PlayStream: {:?}", err);
                         });
                         self.playing = true;
                     }
-                    SoundMessage::Pause if self.playing == true => {
+                    SoundMessage::Pause if self.playing => {
                         debug!("Received pause message");
 
                         stream.pause().unwrap_or_else(|err| {

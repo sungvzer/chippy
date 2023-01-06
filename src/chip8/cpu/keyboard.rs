@@ -1,35 +1,35 @@
 use tao::keyboard::KeyCode;
 
 pub fn is_relevant_key_code(key_code: KeyCode) -> bool {
-    match key_code {
+    matches!(
+        key_code,
         KeyCode::Digit0
-        | KeyCode::Digit1
-        | KeyCode::Digit2
-        | KeyCode::Digit3
-        | KeyCode::Digit4
-        | KeyCode::Digit5
-        | KeyCode::Digit6
-        | KeyCode::Digit7
-        | KeyCode::Digit8
-        | KeyCode::Digit9
-        | KeyCode::Numpad0
-        | KeyCode::Numpad1
-        | KeyCode::Numpad2
-        | KeyCode::Numpad3
-        | KeyCode::Numpad4
-        | KeyCode::Numpad5
-        | KeyCode::Numpad6
-        | KeyCode::Numpad7
-        | KeyCode::Numpad8
-        | KeyCode::Numpad9
-        | KeyCode::KeyA
-        | KeyCode::KeyB
-        | KeyCode::KeyC
-        | KeyCode::KeyD
-        | KeyCode::KeyE
-        | KeyCode::KeyF => true,
-        _ => false,
-    }
+            | KeyCode::Digit1
+            | KeyCode::Digit2
+            | KeyCode::Digit3
+            | KeyCode::Digit4
+            | KeyCode::Digit5
+            | KeyCode::Digit6
+            | KeyCode::Digit7
+            | KeyCode::Digit8
+            | KeyCode::Digit9
+            | KeyCode::Numpad0
+            | KeyCode::Numpad1
+            | KeyCode::Numpad2
+            | KeyCode::Numpad3
+            | KeyCode::Numpad4
+            | KeyCode::Numpad5
+            | KeyCode::Numpad6
+            | KeyCode::Numpad7
+            | KeyCode::Numpad8
+            | KeyCode::Numpad9
+            | KeyCode::KeyA
+            | KeyCode::KeyB
+            | KeyCode::KeyC
+            | KeyCode::KeyD
+            | KeyCode::KeyE
+            | KeyCode::KeyF
+    )
 }
 
 pub fn key_code_to_u8(key_code: KeyCode) -> u8 {

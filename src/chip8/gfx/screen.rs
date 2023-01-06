@@ -1,5 +1,3 @@
-use log::debug;
-
 #[derive(Default, Clone, Copy)]
 pub struct Pixel {
     filled: bool,

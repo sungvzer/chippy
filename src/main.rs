@@ -116,7 +116,7 @@ fn handle_window_event(
 fn init_60hz_clock(tx: Sender<u64>, stop_signal: Arc<AtomicBool>) -> thread::JoinHandle<()> {
     let mut ticks = 0;
     let clock_closure = move || loop {
-        if stop_signal.load(Ordering::Relaxed) == true {
+        if stop_signal.load(Ordering::Relaxed) {
             break;
         }
         thread::sleep(Duration::from_millis(16));
@@ -165,8 +165,7 @@ fn main() -> Result<(), String> {
     let mut pixels = {
         let window_size = window.inner_size();
         let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
-        let pixels = Pixels::new(64, 32, surface_texture).unwrap();
-        pixels
+        Pixels::new(64, 32, surface_texture).unwrap()
     };
 
     // We do this to avoid the compiler screaming at us for moving the handle
