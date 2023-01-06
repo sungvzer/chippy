@@ -19,16 +19,19 @@ use std::{
     path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
-        mpsc::{self, Sender},
+        mpsc::{self, Receiver, Sender},
         Arc,
     },
     thread::{self, JoinHandle},
     time::Duration,
 };
 
-use chip8::cpu::{
-    cpu::{CPUIterationDecision, CPU},
-    keyboard::is_relevant_key_code,
+use chip8::{
+    cpu::{
+        cpu::{CPUIterationDecision, CPU},
+        keyboard::is_relevant_key_code,
+    },
+    sound::{beep::Sound, message::SoundMessage},
 };
 
 use log::{debug, info};
@@ -112,7 +115,7 @@ fn handle_window_event(
 
 fn init_60hz_clock(tx: Sender<u64>, stop_signal: Arc<AtomicBool>) -> thread::JoinHandle<()> {
     let mut ticks = 0;
-    let tick_closure = move || loop {
+    let clock_closure = move || loop {
         if stop_signal.load(Ordering::Relaxed) == true {
             break;
         }
@@ -120,20 +123,28 @@ fn init_60hz_clock(tx: Sender<u64>, stop_signal: Arc<AtomicBool>) -> thread::Joi
         tx.send(ticks).expect("Could not send the tick");
         ticks += 1;
     };
-    let ticker = thread::spawn(tick_closure);
-    ticker
+    thread::spawn(clock_closure)
+}
+
+fn init_beep(message_rx: Receiver<SoundMessage>) -> thread::JoinHandle<()> {
+    let closure = move || {
+        let _beep = Sound::new(message_rx);
+    };
+    thread::spawn(closure)
 }
 
 fn main() -> Result<(), String> {
     let args = Cli::parse();
     debug!("Parsed CLI arguments");
 
-    let (timer_tick_tx, timer_tick_rx) = mpsc::channel();
+    let (clock_tx, clock_rx) = mpsc::channel();
+    let (sound_message_tx, sound_message_rx) = mpsc::channel();
     let timer_tick_stop = Arc::new(AtomicBool::new(false));
 
-    let join_handle_ticker = init_60hz_clock(timer_tick_tx, Arc::clone(&timer_tick_stop));
+    let join_clock = init_60hz_clock(clock_tx, Arc::clone(&timer_tick_stop));
+    let join_sound = init_beep(sound_message_rx);
 
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(sound_message_tx);
     cpu.load_program_from_file(args.file)?;
 
     match logs::log_init(args.debug) {
@@ -159,10 +170,11 @@ fn main() -> Result<(), String> {
     };
 
     // We do this to avoid the compiler screaming at us for moving the handle
-    let mut join_option = Some(join_handle_ticker);
+    let mut join_clock_option = Some(join_clock);
+    let mut join_sound_option = Some(join_sound);
 
     event_loop.run(move |event, _target, control_flow| {
-        if let Ok(tick) = timer_tick_rx.try_recv() {
+        if let Ok(tick) = clock_rx.try_recv() {
             cpu.tick(tick);
         }
         match event {
@@ -176,7 +188,11 @@ fn main() -> Result<(), String> {
                 );
                 if *control_flow == ControlFlow::Exit {
                     debug!("Joining 60Hz clock thread");
-                    join_option.take().map(JoinHandle::join);
+                    join_clock_option.take().map(JoinHandle::join);
+
+                    debug!("Joining sound thread");
+                    cpu.force_audio_stop();
+                    join_sound_option.take().map(JoinHandle::join);
                 }
             }
             Event::MainEventsCleared => {

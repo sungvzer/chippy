@@ -1,8 +1,9 @@
 use crate::chip8::{
     cpu::{keyboard::key_code_to_u8, sprites::get_sprite},
     gfx::screen::Screen,
+    sound::message::SoundMessage,
 };
-use std::{fs::OpenOptions, io::Read, path::PathBuf};
+use std::{fs::OpenOptions, io::Read, path::PathBuf, sync::mpsc::Sender};
 
 use log::{debug, error, info, warn};
 use tao::keyboard::KeyCode;
@@ -83,7 +84,7 @@ impl CPU {
         &mut self.screen
     }
 
-    pub fn new() -> Self {
+    pub fn new(sound_tx: Sender<SoundMessage>) -> Self {
         let mut cpu = CPU {
             registers: [0x0; 16],
             memory_location: 0x0,
@@ -95,7 +96,7 @@ impl CPU {
             waiting_for_key_press: false,
             stack: [0x0; 16],
             delay_timer: DelayTimer::new(),
-            sound_timer: SoundTimer::new(),
+            sound_timer: SoundTimer::new(sound_tx),
         };
         cpu.initialize_sprites();
         cpu.clear_screen();
@@ -392,10 +393,8 @@ impl CPU {
 
         CPUIterationDecision::Continue
     }
-}
 
-impl Default for CPU {
-    fn default() -> Self {
-        Self::new()
+    pub fn force_audio_stop(&self) -> () {
+        self.sound_timer.force_audio_stop();
     }
 }
