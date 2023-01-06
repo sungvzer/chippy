@@ -385,6 +385,13 @@ impl CPU {
                 let vy = self.get_register(y);
                 self.set_register(x, vx & vy);
             }
+
+            Instruction::ADDIVx(register) => {
+                debug!("ADD I, V{:X}", register);
+                let vx = self.get_register(register);
+                self.memory_location += vx as u16;
+            }
+
             other => {
                 debug!("TODO: Implement {:?}", other);
             }

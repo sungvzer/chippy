@@ -65,6 +65,9 @@ pub enum Instruction {
 
     /** AND Vx, Vy - Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx. */
     AND(u8, u8),
+
+    /** ADD I, Vx - The values of I and Vx are added, and the results are stored in I. */
+    ADDIVx(u8),
 }
 
 fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
@@ -106,6 +109,11 @@ fn parse_f_instruction(instruction: u16) -> InstructionParseResult {
     if least_significant_byte == 0x18 {
         // 0xFx18, LD ST, Vx
         return Ok(Instruction::LDSTFromVx(register));
+    }
+
+    if least_significant_byte == 0x1E {
+        // 0xFx1E, ADD I, Vx
+        return Ok(Instruction::ADDIVx(register));
     }
 
     if least_significant_byte == 0x29 {
