@@ -91,6 +91,7 @@ fn handle_window_event(
     match event {
         WindowEvent::Resized(size) => {
             pixels.resize_surface(size.width, size.height).unwrap();
+            pixels.render().unwrap();
         }
         WindowEvent::CloseRequested => {
             exit(timer_tick_stop, control_flow);
