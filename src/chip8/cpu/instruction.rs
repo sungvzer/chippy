@@ -68,6 +68,12 @@ pub enum Instruction {
 
     /** ADD I, Vx - The values of I and Vx are added, and the results are stored in I. */
     ADDIVx(u8),
+
+    /** SKP Vx, Skip next instruction if key with the value of Vx is pressed. */
+    SKP(u8),
+
+    /** SKNP Vx - Skip next instruction if key with the value of Vx is not pressed. */
+    SKNP(u8),
 }
 
 fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
@@ -219,6 +225,15 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
         let x = most_significant_byte & 0x0f;
         let y = least_significant_byte & 0xf0 >> 4;
         return Ok(Instruction::DRW(x, y, sprite_length));
+    }
+
+    if most_significant_byte & 0xf0 == 0xE0 {
+        // 0xExnn - Skip if key is pressed/not pressed
+        if least_significant_byte == 0x9E {
+            return Ok(Instruction::SKP(most_significant_byte & 0x0f));
+        } else if least_significant_byte == 0xA1 {
+            return Ok(Instruction::SKNP(most_significant_byte & 0x0f));
+        };
     }
 
     if most_significant_byte & 0xf0 == 0xF0 {

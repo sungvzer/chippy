@@ -392,6 +392,26 @@ impl CPU {
                 self.memory_location += vx as u16;
             }
 
+            Instruction::SKP(register) => {
+                debug!("SKP V{:X}", register);
+                let value = self.get_register(register);
+                let active_key_code = self.active_key_code;
+                if let Some(key) = active_key_code {
+                    let key = key_code_to_u8(key);
+                    if key == value {
+                        self.program_counter += 2;
+                    }
+                }
+            }
+            Instruction::SKNP(register) => {
+                debug!("SKNP V{:X}", register);
+                let value = self.get_register(register);
+                let active_key_code = self.active_key_code;
+                if active_key_code == None || key_code_to_u8(active_key_code.unwrap()) != value {
+                    self.program_counter += 2;
+                }
+            }
+
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
