@@ -18,6 +18,7 @@ impl Pixel {
 }
 pub struct Screen {
     buffer: [Pixel; Screen::WIDTH * Screen::HEIGHT],
+    changed: bool,
 }
 
 impl Screen {
@@ -30,6 +31,7 @@ impl Screen {
         let pixel = Pixel { filled: false };
         Screen {
             buffer: [pixel; Screen::WIDTH * Screen::HEIGHT],
+            changed: false,
         }
     }
     /// Returns `true` if a filled pixel has been erased
@@ -70,10 +72,15 @@ impl Screen {
         }
 
         existing_pixel.set_filled(fill_pixel);
+        self.changed = true;
         did_erase_pixel
     }
 
-    pub fn draw(&self, frame: &mut [u8]) {
+    pub fn draw(&mut self, frame: &mut [u8]) -> bool {
+        if !self.changed {
+            return false;
+        }
+
         for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
             let px = self.buffer[i];
 
@@ -84,6 +91,8 @@ impl Screen {
             };
             pixel.copy_from_slice(&slice);
         }
+        self.changed = false;
+        true
     }
 }
 

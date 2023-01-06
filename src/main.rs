@@ -202,8 +202,9 @@ fn main() -> Result<(), String> {
             }
             Event::RedrawRequested(_) => {
                 let frame = pixels.get_frame_mut();
-                cpu.screen().draw(frame);
-                pixels.render().unwrap();
+                if cpu.screen_mut().draw(frame) {
+                    pixels.render().unwrap();
+                }
             }
             _ => {}
         };
