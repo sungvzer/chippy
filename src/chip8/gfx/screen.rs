@@ -1,14 +1,21 @@
+use log::debug;
+
 #[derive(Default, Clone, Copy)]
 pub struct Pixel {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
+    filled: bool,
 }
 
 impl Pixel {
     pub fn filled(&self) -> bool {
-        self.r == 255 && self.g == 255 && self.b == 255
+        self.filled
+    }
+
+    pub fn set_filled(&mut self, filled: bool) {
+        self.filled = filled;
+    }
+
+    pub fn new() -> Self {
+        Pixel { filled: false }
     }
 }
 pub struct Screen {
@@ -22,12 +29,7 @@ impl Screen {
 
 impl Screen {
     pub fn new() -> Self {
-        let pixel = Pixel {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 255,
-        };
+        let pixel = Pixel { filled: false };
         Screen {
             buffer: [pixel; Screen::WIDTH * Screen::HEIGHT],
         }
@@ -48,14 +50,7 @@ impl Screen {
     }
 
     pub fn clear(&mut self) {
-        self.fill({
-            Pixel {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 255,
-            }
-        })
+        self.fill(Pixel::new())
     }
 
     pub fn fill(&mut self, pixel: Pixel) {
@@ -76,10 +71,7 @@ impl Screen {
             did_erase_pixel = true;
         }
 
-        existing_pixel.r = if fill_pixel { 255 } else { 0 };
-        existing_pixel.g = if fill_pixel { 255 } else { 0 };
-        existing_pixel.b = if fill_pixel { 255 } else { 0 };
-        existing_pixel.a = 255;
+        existing_pixel.set_filled(fill_pixel);
         did_erase_pixel
     }
 
@@ -87,7 +79,12 @@ impl Screen {
         for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
             let px = self.buffer[i];
 
-            pixel.copy_from_slice(&[px.r, px.g, px.b, px.a]);
+            let slice: [u8; 4] = if px.filled {
+                [0xff, 0xff, 0xff, 0xff]
+            } else {
+                [0, 0, 0, 0]
+            };
+            pixel.copy_from_slice(&slice);
         }
     }
 }
