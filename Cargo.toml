@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors = ["sungvzer <sungvzer@proton.me>"]
 
+[[bin]]
+name = "disassembler"
+path = "src/disassembler/bin/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
