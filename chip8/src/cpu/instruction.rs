@@ -1,4 +1,5 @@
-#[derive(Debug)]
+use core::fmt::Debug;
+
 pub enum Instruction {
     /** JP addr */
     JP(u16),
@@ -77,6 +78,40 @@ pub enum Instruction {
 
     /** SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow */
     SUB(u8, u8),
+}
+
+impl Debug for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Instruction::*;
+        match self {
+            JP(arg0) => write!(f, "JP ({:03X})", arg0),
+            CLS => write!(f, "CLS"),
+            RET => write!(f, "RET"),
+            CALL(arg0) => write!(f, "CALL ({:03X})", arg0),
+            SE(arg0, arg1) => write!(f, "SE (V{:X}, {:02X})", arg0, arg1),
+            SNE(arg0, arg1) => write!(f, "SNE (V{:X}, {:02X})", arg0, arg1),
+            LD(arg0, arg1) => write!(f, "LD (V{:X}, {:02X})", arg0, arg1),
+            RND(arg0, arg1) => write!(f, "RND (V{:X}, {:02X})", arg0, arg1),
+            LDI(arg0) => write!(f, "LD (I, {:03X})", arg0),
+            LDB(arg0) => write!(f, "LD (B, V{:X})", arg0),
+            LDVxFromVy(arg0, arg1) => write!(f, "LD (V{:X}, V{:X})", arg0, arg1),
+            LDVxFromI(arg0) => write!(f, "LD (V{:X}, I)", arg0),
+            LDVxFromK(arg0) => write!(f, "LD (V{:X}, K)", arg0),
+            LDIFromVx(arg0) => write!(f, "LD (I, V{:X})", arg0),
+            LDDTFromVx(arg0) => write!(f, "LD (DT, V{:X})", arg0),
+            LDSTFromVx(arg0) => write!(f, "LD (ST, V{:X})", arg0),
+            LDVxFromDT(arg0) => write!(f, "LD (V{:X}, DT)", arg0),
+            LDF(arg0) => write!(f, "LD (F, V{:X})", arg0),
+            DRW(arg0, arg1, arg2) => write!(f, "DRW (V{:X}, V{:X}, {:X})", arg0, arg1, arg2),
+            ADD(arg0, arg1) => write!(f, "ADD (V{:X}, V{:X})", arg0, arg1),
+            HLT => write!(f, "HLT"),
+            AND(arg0, arg1) => write!(f, "AND (V{:X}, V{:X})", arg0, arg1),
+            ADDIVx(arg0) => write!(f, "ADD (I, V{:X})", arg0),
+            SKP(arg0) => write!(f, "SKP (V{:X})", arg0),
+            SKNP(arg0) => write!(f, "SKNP (V{:X})", arg0),
+            SUB(arg0, arg1) => write!(f, "SUB (V{:X}, V{:X})", arg0, arg1),
+        }
+    }
 }
 
 fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
