@@ -2,7 +2,7 @@ use std::sync::mpsc::Sender;
 
 use log::error;
 
-use crate::chip8::sound::message::SoundMessage;
+use crate::sound::message::SoundMessage;
 
 use super::timer::Timer;
 

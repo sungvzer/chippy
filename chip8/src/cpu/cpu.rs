@@ -1,4 +1,4 @@
-use crate::chip8::{
+use crate::{
     cpu::{keyboard::key_code_to_u8, sprites::get_sprite},
     gfx::screen::Screen,
     sound::message::SoundMessage,
@@ -8,7 +8,7 @@ use std::{fs::OpenOptions, io::Read, path::PathBuf, sync::mpsc::Sender};
 use log::{debug, error, info, warn};
 use tao::keyboard::KeyCode;
 
-use crate::chip8::{
+use crate::{
     cpu::{
         instruction::{parse_instruction, Instruction},
         rng::random_byte,

@@ -1,0 +1,23 @@
+[package]
+name = "chip8"
+version = "0.1.0"
+edition = "2021"
+authors = ["sungvzer <sungvzer@proton.me>"]
+
+[dependencies]
+# Audio
+cpal = "^0.14.2"
+
+# Misc
+chrono = "^0.4.23"
+
+# RNG
+rand = "^0.8.5"
+
+# Logging
+log = "^0.4.17"
+fern = { version = "^0.6.1", features = ["colored"] }
+
+# GUI
+pixels = "^0.11.0"
+tao = "^0.15.8"

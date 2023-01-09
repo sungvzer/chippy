@@ -1,6 +1,5 @@
 #![forbid(unsafe_code)]
 #![deny(clippy::all)]
-pub mod chip8;
 mod logs;
 
 use clap::{arg, command, Parser};
