@@ -475,6 +475,18 @@ impl CPU {
                 self.set_register(x, vx << 1);
             }
 
+            Instruction::SHR(x) => {
+                debug!("SHR V{:X}", x);
+
+                let vx = self.get_register(x);
+                let lsb = vx & 0x01;
+
+                debug!("V{:X} = 0x{:02X}", x, vx);
+                debug!("0x{:02X} >> 1 = 0x{:02X}, lsb = {:02X}", vx, vx >> 1, lsb);
+                self.set_register(VF, lsb);
+                self.set_register(x, vx >> 1);
+            }
+
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
