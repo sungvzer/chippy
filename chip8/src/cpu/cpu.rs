@@ -408,6 +408,12 @@ impl CPU {
                 let vy = self.get_register(y);
                 self.set_register(x, vx | vy);
             }
+            Instruction::XOR(x, y) => {
+                debug!("XOR V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+                self.set_register(x, vx ^ vy);
+            }
 
             Instruction::ADDIVx(register) => {
                 debug!("ADD I, V{:X}", register);

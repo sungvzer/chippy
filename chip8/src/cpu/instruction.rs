@@ -75,6 +75,9 @@ pub enum Instruction {
     /** OR Vx, Vy - Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. */
     OR(u8, u8),
 
+    /** XOR Vx, Vy - Performs a bitwise XOR on the values of Vx and Vy, then stores the result in Vx. */
+    XOR(u8, u8),
+
     /** ADD I, Vx - The values of I and Vx are added, and the results are stored in I. */
     ADDIVx(u8),
 
@@ -117,6 +120,7 @@ impl Debug for Instruction {
             HLT => write!(f, "HLT"),
             AND(arg0, arg1) => write!(f, "AND (V{:X}, V{:X})", arg0, arg1),
             OR(arg0, arg1) => write!(f, "OR (V{:X}, V{:X})", arg0, arg1),
+            XOR(arg0, arg1) => write!(f, "XOR (V{:X}, V{:X})", arg0, arg1),
             ADDIVx(arg0) => write!(f, "ADD (I, V{:X})", arg0),
             SKP(arg0) => write!(f, "SKP (V{:X})", arg0),
             SKNP(arg0) => write!(f, "SKNP (V{:X})", arg0),
@@ -136,6 +140,7 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
         0 => Ok(Instruction::LDVxFromVy(x, y)),
         1 => Ok(Instruction::OR(x, y)),
         2 => Ok(Instruction::AND(x, y)),
+        3 => Ok(Instruction::XOR(x, y)),
         5 => Ok(Instruction::SUB(x, y)),
         _ => Unparsed,
     }
