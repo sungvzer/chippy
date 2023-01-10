@@ -346,7 +346,7 @@ impl CPU {
                 let sprite = &self.memory[range];
                 let did_erase = self.screen.draw_sprite(x, y, &sprite.to_vec());
                 self.set_register(VF, if did_erase { 1 } else { 0 });
-                debug!("Drawn sprite to screen");
+                debug!("Drawn sprite to screen at {x}, {y}, {byte_length} bytes");
             }
             Instruction::SE(register, value) => {
                 debug!("SE V{:X}, {:02X}", register, value);

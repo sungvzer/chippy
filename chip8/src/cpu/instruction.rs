@@ -305,7 +305,7 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
             // 0xDxyn = DRW Vx, Vy, sprite length
             let sprite_length = least_significant_byte & 0x0f;
             let x = most_significant_byte & 0x0f;
-            let y = least_significant_byte & 0xf0 >> 4;
+            let y = (least_significant_byte & 0xf0) >> 4;
             Ok(Instruction::DRW(x, y, sprite_length))
         }
         0xE0 => {
