@@ -18,6 +18,8 @@ pub enum Instruction {
 
     /** SE Vx, Vy - Skip next instruction if Vx == Vy */
     SEVxVy(u8, u8),
+    /** SNE Vx, Vy - Skip next instruction if Vx != Vy */
+    SNEVxVy(u8, u8),
 
     /** SNE Vx, byte - Skip next instruction if Vx != byte */
     SNE(u8, u8),
@@ -93,6 +95,7 @@ impl Debug for Instruction {
             CALL(arg0) => write!(f, "CALL ({:03X})", arg0),
             SE(arg0, arg1) => write!(f, "SE (V{:X}, {:02X})", arg0, arg1),
             SEVxVy(arg0, arg1) => write!(f, "SE (V{:X}, V{:X})", arg0, arg1),
+            SNEVxVy(arg0, arg1) => write!(f, "SNE (V{:X}, V{:X})", arg0, arg1),
             SNE(arg0, arg1) => write!(f, "SNE (V{:X}, {:02X})", arg0, arg1),
             LD(arg0, arg1) => write!(f, "LD (V{:X}, {:02X})", arg0, arg1),
             RND(arg0, arg1) => write!(f, "RND (V{:X}, {:02X})", arg0, arg1),
@@ -253,6 +256,12 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
         0x80 => {
             // 0x8xyN, needs more parsing
             parse_8_instruction(instruction)
+        }
+        0x90 => {
+            //0x9xy0 = SNE Vx, Vy
+            let x = ((instruction & 0x0f00) >> 8) as u8;
+            let y = ((instruction & 0x00f0) >> 4) as u8;
+            Ok(Instruction::SNEVxVy(x, y))
         }
         0xA0 => {
             // 0xAnnn = LD I, nnn
