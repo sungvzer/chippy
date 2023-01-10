@@ -39,12 +39,16 @@ struct Cli {
     #[arg(short, long = "output", required = true)]
     output_file: PathBuf,
 
+    /// Show expected instruction memory address
+    #[arg(value_enum, short, long = "address")]
+    show_memory_address: bool,
+
     /// Disassembly format
     #[arg(value_enum, short, long, default_value_t = DisassembleFormat::Hex)]
     format: DisassembleFormat,
 }
 
-fn write_file_hex(path: PathBuf, bytes: &Vec<u8>) -> Result<(), String> {
+fn write_file_hex(path: PathBuf, bytes: &Vec<u8>, show_memory_address: bool) -> Result<(), String> {
     let mut file = match OpenOptions::new().create(true).write(true).open(path) {
         Ok(file) => file,
         Err(err) => {
@@ -52,23 +56,35 @@ fn write_file_hex(path: PathBuf, bytes: &Vec<u8>) -> Result<(), String> {
             return Err("Could not open file".to_string());
         }
     };
+
+    let mut address = 0x200;
 
     for byte in bytes.chunks(2) {
-        let formatted_string = if byte.len() == 2 {
-            format!("{:02X}{:02X}", byte[0], byte[1])
+        let mut formatted_string = "".to_string();
+        if show_memory_address {
+            write!(formatted_string, "{:3X} - ", address).unwrap();
+        }
+
+        if byte.len() == 2 {
+            write!(formatted_string, "{:02X}{:02X}", byte[0], byte[1]).unwrap();
         } else {
-            format!("{:02X}", byte[0])
-        };
+            write!(formatted_string, "{:02X}", byte[0]).unwrap();
+        }
 
         match write!(&mut file, "{}\n", formatted_string) {
             Ok(_) => {}
             Err(err) => return Err(format!("Error writing to file: {}", err.kind().to_string())),
         };
+        address += 2;
     }
 
     Ok(())
 }
-fn write_file_instructions(path: PathBuf, instructions: &Vec<Instruction>) -> Result<(), String> {
+fn write_file_instructions(
+    path: PathBuf,
+    instructions: &Vec<Instruction>,
+    show_memory_address: bool,
+) -> Result<(), String> {
     let mut file = match OpenOptions::new().create(true).write(true).open(path) {
         Ok(file) => file,
         Err(err) => {
@@ -77,19 +93,31 @@ fn write_file_instructions(path: PathBuf, instructions: &Vec<Instruction>) -> Re
         }
     };
 
+    let mut address = 0x200;
+
     for instruction in instructions {
-        let formatted_string = format!("{:?}", instruction);
+        let mut formatted_string = "".to_string();
+        if show_memory_address {
+            write!(formatted_string, "{:3X} - ", address).unwrap();
+        }
+
+        write!(formatted_string, "{:?}", instruction).unwrap();
 
         match write!(&mut file, "{}\n", formatted_string) {
             Ok(_) => {}
             Err(err) => return Err(format!("Error writing to file: {}", err.kind().to_string())),
         };
+        address += 2;
     }
 
     Ok(())
 }
 
-fn write_file_full(path: PathBuf, bytes: &Vec<u8>) -> Result<(), String> {
+fn write_file_full(
+    path: PathBuf,
+    bytes: &Vec<u8>,
+    show_memory_address: bool,
+) -> Result<(), String> {
     let mut file = match OpenOptions::new().create(true).write(true).open(path) {
         Ok(file) => file,
         Err(err) => {
@@ -99,17 +127,24 @@ fn write_file_full(path: PathBuf, bytes: &Vec<u8>) -> Result<(), String> {
     };
     let instructions = disassemble(bytes);
 
+    let mut address = 0x200;
     for (instruction, op_code) in instructions.iter().zip(bytes.chunks_exact(2)) {
-        let formatted_string = if op_code.len() == 2 {
-            format!("{:02X}{:02X}", op_code[0], op_code[1])
+        let mut formatted_string = "".to_string();
+        if show_memory_address {
+            write!(formatted_string, "{:03X} - ", address).unwrap();
+        }
+
+        if op_code.len() == 2 {
+            write!(formatted_string, "{:02X}{:02X}", op_code[0], op_code[1]).unwrap();
         } else {
-            format!("{:02X}", op_code[0])
+            write!(formatted_string, "{:02X}", op_code[0]).unwrap();
         };
 
         match write!(&mut file, "{} - {:?}\n", formatted_string, instruction) {
             Ok(_) => {}
             Err(err) => return Err(format!("Error writing to file: {}", err.kind().to_string())),
         };
+        address += 2;
     }
 
     Ok(())
@@ -166,6 +201,7 @@ fn disassemble(input_bytes: &Vec<u8>) -> Vec<Instruction> {
 
 fn main() -> Result<(), String> {
     let args = Cli::parse();
+    let show_memory_address = args.show_memory_address;
 
     let input_file = args.input_file;
     let output_file = args.output_file;
@@ -173,13 +209,13 @@ fn main() -> Result<(), String> {
     let input_bytes = read_file(input_file, |str| str.eq_ignore_ascii_case("ch8")).unwrap();
 
     if args.format == DisassembleFormat::Hex {
-        return write_file_hex(output_file, &input_bytes);
+        return write_file_hex(output_file, &input_bytes, show_memory_address);
     } else {
         let instructions = disassemble(&input_bytes);
         if args.format == DisassembleFormat::Instructions {
-            return write_file_instructions(output_file, &instructions);
+            return write_file_instructions(output_file, &instructions, show_memory_address);
         } else {
-            return write_file_full(output_file, &input_bytes);
+            return write_file_full(output_file, &input_bytes, show_memory_address);
         }
     }
 }
