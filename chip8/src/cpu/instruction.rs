@@ -89,6 +89,9 @@ pub enum Instruction {
 
     /** SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow */
     SUB(u8, u8),
+
+    /** ADD Vx, Vy - Set Vx = Vx + Vy, set VF = carry */
+    ADDVxVy(u8, u8),
 }
 
 impl Debug for Instruction {
@@ -125,6 +128,7 @@ impl Debug for Instruction {
             SKP(arg0) => write!(f, "SKP (V{:X})", arg0),
             SKNP(arg0) => write!(f, "SKNP (V{:X})", arg0),
             SUB(arg0, arg1) => write!(f, "SUB (V{:X}, V{:X})", arg0, arg1),
+            ADDVxVy(arg0, arg1) => write!(f, "ADD (V{:X}, V{:X})", arg0, arg1),
         }
     }
 }
@@ -141,6 +145,7 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
         1 => Ok(Instruction::OR(x, y)),
         2 => Ok(Instruction::AND(x, y)),
         3 => Ok(Instruction::XOR(x, y)),
+        4 => Ok(Instruction::ADDVxVy(x, y)),
         5 => Ok(Instruction::SUB(x, y)),
         _ => Unparsed,
     }

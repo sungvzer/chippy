@@ -452,6 +452,17 @@ impl CPU {
                 self.set_register(x, sub_result);
             }
 
+            Instruction::ADDVxVy(x, y) => {
+                debug!("ADD V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+
+                let (result, overflow) = vx.overflowing_add(vy);
+
+                self.set_register(VF, if overflow { 1 } else { 0 });
+                self.set_register(x, result);
+            }
+
             other => {
                 debug!("TODO: Implement {:?}", other);
             }
