@@ -463,6 +463,18 @@ impl CPU {
                 self.set_register(x, result);
             }
 
+            Instruction::SHL(x) => {
+                debug!("SHL V{:X}", x);
+
+                let vx = self.get_register(x);
+                let msb = (vx & 0x80) >> 7;
+
+                debug!("V{:X} = 0x{:02X}", x, vx);
+                debug!("0x{:02X} << 1 = 0x{:02X}, msb = {:02X}", vx, vx << 1, msb);
+                self.set_register(VF, msb);
+                self.set_register(x, vx << 1);
+            }
+
             other => {
                 debug!("TODO: Implement {:?}", other);
             }

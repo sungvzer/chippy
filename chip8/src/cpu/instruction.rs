@@ -92,6 +92,9 @@ pub enum Instruction {
 
     /** ADD Vx, Vy - Set Vx = Vx + Vy, set VF = carry */
     ADDVxVy(u8, u8),
+
+    /** SHL Vx - Set VF = MSb of Vx, then set Vx = Vx << 1 */
+    SHL(u8),
 }
 
 impl Debug for Instruction {
@@ -127,6 +130,7 @@ impl Debug for Instruction {
             ADDIVx(arg0) => write!(f, "ADD (I, V{:X})", arg0),
             SKP(arg0) => write!(f, "SKP (V{:X})", arg0),
             SKNP(arg0) => write!(f, "SKNP (V{:X})", arg0),
+            SHL(arg0) => write!(f, "SHL (V{:X})", arg0),
             SUB(arg0, arg1) => write!(f, "SUB (V{:X}, V{:X})", arg0, arg1),
             ADDVxVy(arg0, arg1) => write!(f, "ADD (V{:X}, V{:X})", arg0, arg1),
         }
@@ -141,12 +145,14 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
     let kind = (instruction & 0x000f) as u8;
 
     match kind {
-        0 => Ok(Instruction::LDVxFromVy(x, y)),
-        1 => Ok(Instruction::OR(x, y)),
-        2 => Ok(Instruction::AND(x, y)),
-        3 => Ok(Instruction::XOR(x, y)),
-        4 => Ok(Instruction::ADDVxVy(x, y)),
-        5 => Ok(Instruction::SUB(x, y)),
+        0x00 => Ok(Instruction::LDVxFromVy(x, y)),
+        0x01 => Ok(Instruction::OR(x, y)),
+        0x02 => Ok(Instruction::AND(x, y)),
+        0x03 => Ok(Instruction::XOR(x, y)),
+        0x04 => Ok(Instruction::ADDVxVy(x, y)),
+        0x05 => Ok(Instruction::SUB(x, y)),
+        // NOTE: We ignore the Vy as most emulators do nowadays
+        0x0E => Ok(Instruction::SHL(x)),
         _ => Unparsed,
     }
 }
