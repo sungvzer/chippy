@@ -16,6 +16,9 @@ pub enum Instruction {
     /** SE Vx, byte - Skip next instruction if Vx == byte */
     SE(u8, u8),
 
+    /** SE Vx, Vy - Skip next instruction if Vx == Vy */
+    SEVxVy(u8, u8),
+
     /** SNE Vx, byte - Skip next instruction if Vx != byte */
     SNE(u8, u8),
 
@@ -89,6 +92,7 @@ impl Debug for Instruction {
             RET => write!(f, "RET"),
             CALL(arg0) => write!(f, "CALL ({:03X})", arg0),
             SE(arg0, arg1) => write!(f, "SE (V{:X}, {:02X})", arg0, arg1),
+            SEVxVy(arg0, arg1) => write!(f, "SE (V{:X}, V{:X})", arg0, arg1),
             SNE(arg0, arg1) => write!(f, "SNE (V{:X}, {:02X})", arg0, arg1),
             LD(arg0, arg1) => write!(f, "LD (V{:X}, {:02X})", arg0, arg1),
             RND(arg0, arg1) => write!(f, "RND (V{:X}, {:02X})", arg0, arg1),
@@ -207,78 +211,81 @@ pub fn parse_instruction(instruction: u16) -> InstructionParseResult {
     let most_significant_byte: u8 = most_significant_byte.try_into().unwrap();
     let least_significant_byte: u8 = least_significant_byte.try_into().unwrap();
 
-    if most_significant_byte & 0xf0 == 0x10 {
-        // 0x1nnn = JP nnn
-        return Ok(Instruction::JP(instruction & 0xfff));
-    }
-    if most_significant_byte & 0xf0 == 0x20 {
-        // 0x2nnn = CALL nnn
-        return Ok(Instruction::CALL(instruction & 0xfff));
-    }
-    if most_significant_byte & 0xf0 == 0x30 {
-        // 0x3xkk = SE Vx, kk
-        let register_index = most_significant_byte & 0x0f;
-        let value = least_significant_byte;
-        return Ok(Instruction::SE(register_index, value));
-    }
-    if most_significant_byte & 0xf0 == 0x40 {
-        // 0x3xkk = SE Vx, kk
-        let register_index = most_significant_byte & 0x0f;
-        let value = least_significant_byte;
-        return Ok(Instruction::SNE(register_index, value));
-    }
-    if most_significant_byte & 0xf0 == 0x60 {
-        // 0x6xkk = LD Vx, kk
-        let register_index = most_significant_byte & 0x0f;
-        let value = least_significant_byte;
-        return Ok(Instruction::LD(register_index, value));
-    }
-
-    if most_significant_byte & 0xf0 == 0x70 {
-        // 0x7xkk = LD Vx, kk
-        let register_index = most_significant_byte & 0x0f;
-        let value = least_significant_byte;
-        return Ok(Instruction::ADD(register_index, value));
-    }
-    if most_significant_byte & 0xf0 == 0x80 {
-        // 0x8xyN, needs more parsing
-        return parse_8_instruction(instruction);
-    }
-
-    if most_significant_byte & 0xf0 == 0xA0 {
-        // 0xAnnn = LD I, nnn
-        let address = instruction & 0xfff;
-        return Ok(Instruction::LDI(address));
-    }
-
-    if most_significant_byte & 0xf0 == 0xC0 {
-        // 0xCxkk = RND Vx, byte & kk
-        let register_index = most_significant_byte & 0x0f;
-        let bit_mask = least_significant_byte;
-        return Ok(Instruction::RND(register_index, bit_mask));
-    }
-
-    if most_significant_byte & 0xf0 == 0xD0 {
-        // 0xDxyn = DRW Vx, Vy, sprite length
-        let sprite_length = least_significant_byte & 0x0f;
-        let x = most_significant_byte & 0x0f;
-        let y = least_significant_byte & 0xf0 >> 4;
-        return Ok(Instruction::DRW(x, y, sprite_length));
-    }
-
-    if most_significant_byte & 0xf0 == 0xE0 {
-        // 0xExnn - Skip if key is pressed/not pressed
-        if least_significant_byte == 0x9E {
-            return Ok(Instruction::SKP(most_significant_byte & 0x0f));
-        } else if least_significant_byte == 0xA1 {
-            return Ok(Instruction::SKNP(most_significant_byte & 0x0f));
-        };
-    }
-
-    if most_significant_byte & 0xf0 == 0xF0 {
-        // 0xFnnn, needs more parsing
-        return parse_f_instruction(instruction);
-    }
-
-    Unparsed
+    return match most_significant_byte & 0xf0 {
+        0x10 => {
+            // 0x1nnn = JP nnn
+            Ok(Instruction::JP(instruction & 0xfff))
+        }
+        0x20 => {
+            // 0x2nnn = CALL nnn
+            Ok(Instruction::CALL(instruction & 0xfff))
+        }
+        0x30 => {
+            // 0x3xkk = SE Vx, kk
+            let register_index = most_significant_byte & 0x0f;
+            let value = least_significant_byte;
+            Ok(Instruction::SE(register_index, value))
+        }
+        0x40 => {
+            // 0x4xkk = SNE Vx, kk
+            let register_index = most_significant_byte & 0x0f;
+            let value = least_significant_byte;
+            Ok(Instruction::SNE(register_index, value))
+        }
+        0x50 => {
+            //0x5xy0 = SE Vx, Vy
+            let x = ((instruction & 0x0f00) >> 8) as u8;
+            let y = ((instruction & 0x00f0) >> 4) as u8;
+            Ok(Instruction::SEVxVy(x, y))
+        }
+        0x60 => {
+            // 0x6xkk = LD Vx, kk
+            let register_index = most_significant_byte & 0x0f;
+            let value = least_significant_byte;
+            Ok(Instruction::LD(register_index, value))
+        }
+        0x70 => {
+            // 0x7xkk = LD Vx, kk
+            let register_index = most_significant_byte & 0x0f;
+            let value = least_significant_byte;
+            Ok(Instruction::ADD(register_index, value))
+        }
+        0x80 => {
+            // 0x8xyN, needs more parsing
+            parse_8_instruction(instruction)
+        }
+        0xA0 => {
+            // 0xAnnn = LD I, nnn
+            let address = instruction & 0xfff;
+            Ok(Instruction::LDI(address))
+        }
+        0xC0 => {
+            // 0xCxkk = RND Vx, byte & kk
+            let register_index = most_significant_byte & 0x0f;
+            let bit_mask = least_significant_byte;
+            Ok(Instruction::RND(register_index, bit_mask))
+        }
+        0xD0 => {
+            // 0xDxyn = DRW Vx, Vy, sprite length
+            let sprite_length = least_significant_byte & 0x0f;
+            let x = most_significant_byte & 0x0f;
+            let y = least_significant_byte & 0xf0 >> 4;
+            Ok(Instruction::DRW(x, y, sprite_length))
+        }
+        0xE0 => {
+            // 0xExnn - Skip if key is pressed/not pressed
+            if least_significant_byte == 0x9E {
+                Ok(Instruction::SKP(most_significant_byte & 0x0f))
+            } else if least_significant_byte == 0xA1 {
+                Ok(Instruction::SKNP(most_significant_byte & 0x0f))
+            } else {
+                Unparsed
+            }
+        }
+        0xF0 => {
+            // 0xFnnn, needs more parsing
+            parse_f_instruction(instruction)
+        }
+        _ => Unparsed,
+    };
 }

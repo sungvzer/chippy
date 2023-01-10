@@ -354,6 +354,15 @@ impl CPU {
                     self.program_counter += 2;
                 }
             }
+            Instruction::SEVxVy(x, y) => {
+                debug!("SE V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+                if vx == vy {
+                    self.program_counter += 2;
+                }
+            }
+
             Instruction::SNE(register, value) => {
                 debug!("SNE V{:X}, {:02X}", register, value);
                 if self.get_register(register) != value {
