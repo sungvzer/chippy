@@ -451,6 +451,17 @@ impl CPU {
                 let sub_result = vx.wrapping_sub(vy);
                 self.set_register(x, sub_result);
             }
+            Instruction::SUBN(x, y) => {
+                debug!("SUBN V{:X}, V{:X}", x, y);
+                let vx = self.get_register(x);
+                let vy = self.get_register(y);
+
+                let not_borrow: u8 = if vy > vx { 1 } else { 0 };
+                self.set_register(VF, not_borrow);
+
+                let sub_result = vy.wrapping_sub(vx);
+                self.set_register(x, sub_result);
+            }
 
             Instruction::ADDVxVy(x, y) => {
                 debug!("ADD V{:X}, V{:X}", x, y);

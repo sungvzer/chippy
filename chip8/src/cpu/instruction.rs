@@ -98,6 +98,9 @@ pub enum Instruction {
 
     /** SHR Vx - Set VF = LSb of Vx, then set Vx = Vx >> 1 */
     SHR(u8),
+
+    /** SUBN Vx, Vy - Set Vx = Vy - Vx, set VF = NOT borrow. */
+    SUBN(u8, u8),
 }
 
 impl Debug for Instruction {
@@ -136,6 +139,7 @@ impl Debug for Instruction {
             SHL(arg0) => write!(f, "SHL (V{:X})", arg0),
             SHR(arg0) => write!(f, "SHR (V{:X})", arg0),
             SUB(arg0, arg1) => write!(f, "SUB (V{:X}, V{:X})", arg0, arg1),
+            SUBN(arg0, arg1) => write!(f, "SUBN (V{:X}, V{:X})", arg0, arg1),
             ADDVxVy(arg0, arg1) => write!(f, "ADD (V{:X}, V{:X})", arg0, arg1),
         }
     }
@@ -157,6 +161,7 @@ fn parse_8_instruction(instruction: u16) -> InstructionParseResult {
         0x05 => Ok(Instruction::SUB(x, y)),
         // NOTE: We ignore the Vy as most emulators do nowadays
         0x06 => Ok(Instruction::SHR(x)),
+        0x07 => Ok(Instruction::SUBN(x, y)),
         // NOTE: We ignore the Vy as most emulators do nowadays
         0x0E => Ok(Instruction::SHL(x)),
         _ => Unparsed,
