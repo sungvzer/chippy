@@ -54,7 +54,8 @@ impl Screen {
     }
 
     pub fn clear(&mut self) {
-        self.fill(Pixel::new())
+        self.fill(Pixel::new());
+        self.changed = true;
     }
 
     pub fn fill(&mut self, pixel: Pixel) {
@@ -63,21 +64,15 @@ impl Screen {
 
     /// Returns `true` if a filled pixel has been erased
     pub fn set_pixel(&mut self, x: usize, y: usize, mut fill_pixel: bool) -> bool {
-        let mut did_erase_pixel = false;
         let mut index: usize = Screen::WIDTH;
         index *= y;
         index += x;
 
-        // 0 XOR 0 is not of interest as it does not cause any
         let existing_pixel = &mut self.buffer[index];
-        if existing_pixel.filled() && fill_pixel {
-            fill_pixel = false;
-            did_erase_pixel = true;
-        }
-
-        existing_pixel.set_filled(fill_pixel);
+        let vf = existing_pixel.filled && fill_pixel;
+        existing_pixel.set_filled(fill_pixel ^ existing_pixel.filled);
         self.changed = true;
-        did_erase_pixel
+        vf
     }
 
     pub fn draw(&mut self, frame: &mut [u8]) -> bool {
