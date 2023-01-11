@@ -125,7 +125,7 @@ impl CPU {
     }
 
     pub fn load_program_from_file(&mut self, file_path: PathBuf) -> Result<usize, String> {
-        debug!("Loading file {}", file_path.as_path().to_str().unwrap());
+        info!("Loading file {}", file_path.as_path().to_str().unwrap());
 
         if !file_path
             .extension()

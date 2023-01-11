@@ -145,7 +145,6 @@ fn main() -> Result<(), String> {
     let join_sound = init_beep(sound_message_rx);
 
     let mut cpu = CPU::new(sound_message_tx);
-    cpu.load_program_from_file(args.file)?;
 
     match logs::log_init(args.debug) {
         Ok(()) => {
@@ -155,6 +154,8 @@ fn main() -> Result<(), String> {
             println!("Could not setup logger: {}", error)
         }
     };
+
+    cpu.load_program_from_file(args.file)?;
 
     // GUI Init
     let event_loop = EventLoop::new();
