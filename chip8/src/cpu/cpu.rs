@@ -488,7 +488,7 @@ impl CPU {
             }
 
             other => {
-                debug!("TODO: Implement {:?}", other);
+                warn!("TODO: Implement {:?}", other);
             }
         }
         self.program_counter += 2;
