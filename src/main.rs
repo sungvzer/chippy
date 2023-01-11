@@ -33,7 +33,7 @@ use chip8::{
     sound::{beep::Sound, message::SoundMessage},
 };
 
-use log::{debug, info};
+use log::{debug, error, info};
 
 const SCALING_FACTOR: u32 = 10;
 const DISPLAY_ROWS: u32 = 32;
@@ -139,6 +139,11 @@ fn main() -> Result<(), String> {
 
     let (clock_tx, clock_rx) = mpsc::channel();
     let (sound_message_tx, sound_message_rx) = mpsc::channel();
+    sound_message_tx
+        .send(SoundMessage::Stop)
+        .unwrap_or_else(|err| {
+            error!("Error playing sound: {:?}", err);
+        });
     let timer_tick_stop = Arc::new(AtomicBool::new(false));
 
     let join_clock = init_60hz_clock(clock_tx, Arc::clone(&timer_tick_stop));
