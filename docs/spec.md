@@ -97,12 +97,14 @@ The stack is an array of 16 16-bit values, used to store the address that the in
 
 The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad with the following layout:
 
-```plaintext
-123C
-456D
-789E
-A0BF
-```
+<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>C</kbd>
+
+<kbd>4</kbd> <kbd>5</kbd> <kbd>6</kbd> <kbd>D</kbd>
+
+<kbd>7</kbd> <kbd>8</kbd> <kbd>9</kbd> <kbd>E</kbd>
+
+<kbd>A</kbd> <kbd>0</kbd> <kbd>B</kbd> <kbd>F</kbd>
+
 
 This layout must be mapped into various other configurations to fit the keyboards of today's platforms.
 
