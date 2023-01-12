@@ -63,10 +63,10 @@ impl Screen {
     }
 
     /// Returns `true` if a filled pixel has been erased
-    pub fn set_pixel(&mut self, x: usize, y: usize, mut fill_pixel: bool) -> bool {
-        let mut index: usize = Screen::WIDTH;
-        index *= y;
-        index += x;
+    pub fn set_pixel(&mut self, x: usize, y: usize, fill_pixel: bool) -> bool {
+        let mut index: usize = Self::WIDTH;
+        index *= y % Self::HEIGHT;
+        index += x % Self::WIDTH;
 
         let existing_pixel = &mut self.buffer[index];
         let vf = existing_pixel.filled && fill_pixel;
