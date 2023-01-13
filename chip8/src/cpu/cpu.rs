@@ -1,12 +1,7 @@
-use crate::{
-    cpu::{keyboard::key_code_to_u8, sprites::get_sprite},
-    gfx::screen::Screen,
-    sound::message::SoundMessage,
-};
+use crate::{cpu::sprites::get_sprite, gfx::screen::Screen, sound::message::SoundMessage};
 use std::{fs::OpenOptions, io::Read, path::PathBuf, sync::mpsc::Sender};
 
 use log::{debug, error, info, warn};
-use tao::keyboard::KeyCode;
 
 use crate::{
     cpu::{
@@ -60,7 +55,7 @@ pub struct CPU {
     stack_pointer: u8,
 
     /// Stores the currently pressed key
-    active_key_code: Option<KeyCode>,
+    active_key_code: Option<u8>,
 
     waiting_for_key_press: bool,
 
@@ -228,7 +223,7 @@ impl CPU {
         self.stack_pointer -= 1;
     }
 
-    pub fn set_key_pressed(&mut self, key: Option<KeyCode>) {
+    pub fn set_key_pressed(&mut self, key: Option<u8>) {
         self.active_key_code = key;
     }
 
@@ -312,7 +307,7 @@ impl CPU {
                 debug!("LD V{:X}, K", register);
                 if let Some(key) = self.active_key_code {
                     debug!("Key pressed! {:?}", key);
-                    self.set_register(register, key_code_to_u8(key));
+                    self.set_register(register, key);
                     self.waiting_for_key_press = false;
                 } else {
                     self.waiting_for_key_press = true;
@@ -426,7 +421,6 @@ impl CPU {
                 let value = self.get_register(register);
                 let active_key_code = self.active_key_code;
                 if let Some(key) = active_key_code {
-                    let key = key_code_to_u8(key);
                     if key == value {
                         self.program_counter += 2;
                     }
@@ -436,7 +430,7 @@ impl CPU {
                 debug!("SKNP V{:X}", register);
                 let value = self.get_register(register);
                 let active_key_code = self.active_key_code;
-                if active_key_code == None || key_code_to_u8(active_key_code.unwrap()) != value {
+                if active_key_code == None || active_key_code.unwrap() != value {
                     self.program_counter += 2;
                 }
             }

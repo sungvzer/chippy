@@ -1,8 +1,10 @@
 #![forbid(unsafe_code)]
 #![deny(clippy::all)]
+mod keymap;
 mod logs;
 
 use clap::{arg, command, Parser};
+use keymap::Keymap;
 use pixels::{Pixels, SurfaceTexture};
 
 use tao::{
@@ -28,7 +30,7 @@ use std::{
 use chip8::{
     cpu::{
         cpu::{CPUIterationDecision, CPU},
-        keyboard::is_relevant_key_code,
+        keyboard::parse_key_code,
     },
     sound::{beep::Sound, message::SoundMessage},
 };
@@ -49,6 +51,10 @@ struct Cli {
     /// .ch8 file to load program from
     #[arg(short, long, required = true)]
     file: PathBuf,
+
+    /// Keymap .json file
+    #[arg(short, long)]
+    keymap: Option<PathBuf>,
 
     /// Turn debugging information on
     #[arg(short, long)]
@@ -86,6 +92,7 @@ fn handle_window_event(
     control_flow: &mut ControlFlow,
     cpu: &mut CPU,
     timer_tick_stop: Arc<AtomicBool>,
+    keymap: &Keymap,
 ) {
     match event {
         WindowEvent::Resized(size) => {
@@ -100,12 +107,12 @@ fn handle_window_event(
                 exit(timer_tick_stop, control_flow);
             }
 
-            let relevant = is_relevant_key_code(event.physical_key);
+            let relevant = parse_key_code(event.physical_key, &keymap.keys);
 
-            if event.state == ElementState::Released || !relevant {
+            if event.state == ElementState::Released || relevant.is_none() {
                 cpu.set_key_pressed(None);
             } else {
-                cpu.set_key_pressed(Some(event.physical_key));
+                cpu.set_key_pressed(relevant);
             };
         }
 
@@ -160,6 +167,13 @@ fn main() -> Result<(), String> {
         }
     };
 
+    let keymap: Keymap = if let Some(keymap) = args.keymap {
+        keymap::read_keymap(keymap).unwrap()
+    } else {
+        keymap::default_keymap()
+    };
+    println!("{:?}", keymap);
+
     cpu.load_program_from_file(args.file)?;
 
     // GUI Init
@@ -190,6 +204,7 @@ fn main() -> Result<(), String> {
                     control_flow,
                     &mut cpu,
                     timer_tick_stop.clone(),
+                    &keymap,
                 );
                 if *control_flow == ControlFlow::Exit {
                     debug!("Joining 60Hz clock thread");

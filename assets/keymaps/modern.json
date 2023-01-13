@@ -1,0 +1,20 @@
+{
+    "keys": {
+        "Digit1": 1,
+        "Digit2": 2,
+        "Digit3": 3,
+        "Digit4": 12,
+        "KeyQ": 4,
+        "KeyW": 5,
+        "KeyE": 6,
+        "KeyR": 13,
+        "KeyA": 7,
+        "KeyS": 8,
+        "KeyD": 9,
+        "KeyF": 14,
+        "KeyZ": 10,
+        "KeyX": 0,
+        "KeyC": 11,
+        "KeyV": 15
+    }
+}
