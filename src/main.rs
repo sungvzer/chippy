@@ -149,7 +149,7 @@ fn main() -> Result<(), String> {
     sound_message_tx
         .send(SoundMessage::Stop)
         .unwrap_or_else(|err| {
-            error!("Error playing sound: {:?}", err);
+            error!("Error stopping sound: {:?}", err);
         });
     let timer_tick_stop = Arc::new(AtomicBool::new(false));
 

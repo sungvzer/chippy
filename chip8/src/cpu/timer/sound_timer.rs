@@ -25,7 +25,7 @@ impl SoundTimer {
         self.sound_tx
             .send(SoundMessage::Stop)
             .unwrap_or_else(|err| {
-                error!("Error while stopping sound! {:?}", err);
+                error!("Error while stopping sound! {:?}", err.to_string());
             });
     }
 }
