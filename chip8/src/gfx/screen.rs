@@ -50,7 +50,7 @@ impl Screen {
 
             y += 1;
         }
-        false
+        did_erase_pixel
     }
 
     pub fn clear(&mut self) {
