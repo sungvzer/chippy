@@ -147,9 +147,9 @@ fn main() -> Result<(), String> {
     let (clock_tx, clock_rx) = mpsc::channel();
     let (sound_message_tx, sound_message_rx) = mpsc::channel();
     sound_message_tx
-        .send(SoundMessage::Stop)
+        .send(SoundMessage::Pause)
         .unwrap_or_else(|err| {
-            error!("Error stopping sound: {:?}", err);
+            error!("Error pausing sound: {:?}", err);
         });
     let timer_tick_stop = Arc::new(AtomicBool::new(false));
 
