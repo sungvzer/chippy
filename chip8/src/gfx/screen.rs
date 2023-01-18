@@ -1,23 +1,5 @@
-#[derive(Default, Clone, Copy)]
-pub struct Pixel {
-    filled: bool,
-}
-
-impl Pixel {
-    pub fn filled(&self) -> bool {
-        self.filled
-    }
-
-    pub fn set_filled(&mut self, filled: bool) {
-        self.filled = filled;
-    }
-
-    pub fn new() -> Self {
-        Pixel { filled: false }
-    }
-}
 pub struct Screen {
-    buffer: [Pixel; Screen::WIDTH * Screen::HEIGHT],
+    buffer: [u8; (Screen::WIDTH / 8) * (Screen::HEIGHT / 8)],
     changed: bool,
 }
 
@@ -28,51 +10,43 @@ impl Screen {
 
 impl Screen {
     pub fn new() -> Self {
-        let pixel = Pixel { filled: false };
+        const HEIGHT_BYTES: usize = Screen::HEIGHT / 8;
+        const WIDTH_BYTES: usize = Screen::WIDTH / 8;
         Screen {
-            buffer: [pixel; Screen::WIDTH * Screen::HEIGHT],
+            buffer: [0x00; WIDTH_BYTES * HEIGHT_BYTES],
             changed: false,
         }
     }
     /// Returns `true` if a filled pixel has been erased
-    pub fn draw_sprite(&mut self, x: usize, mut y: usize, sprite: &Vec<u8>) -> bool {
+    pub fn draw_sprite(&mut self, mut x: usize, mut y: usize, sprite: &Vec<u8>) -> bool {
         let mut did_erase_pixel = false;
+        x = x % Screen::WIDTH;
+        y = y % Screen::HEIGHT;
 
         // For every byte (0b01010101)
-        for byte in sprite {
-            for j in 0..8 {
-                // Get a single bit and draw it on screen
-                let filled = (byte & (1 << j)) != 0;
-
-                // Order is reversed (LSb to MSb) so start from x + 7 to x + 0
-                did_erase_pixel = did_erase_pixel || self.set_pixel(x + (7 - j), y, filled);
+        for sprite_byte in sprite {
+            if *sprite_byte != 0 {
+                println!("Drawing 0b{:b}", *sprite_byte);
             }
+            let index = (y * Screen::WIDTH) + x;
+            println!("Converting {x},{y} to {index}");
+            let current_byte = self.buffer.get_mut(index).unwrap();
+            did_erase_pixel = sprite_byte & *current_byte != 0;
 
+            *current_byte ^= sprite_byte;
             y += 1;
         }
+        self.changed = true;
         did_erase_pixel
     }
 
     pub fn clear(&mut self) {
-        self.fill(Pixel::new());
+        self.buffer.fill(0x00);
         self.changed = true;
     }
 
-    pub fn fill(&mut self, pixel: Pixel) {
-        self.buffer.fill(pixel);
-    }
-
-    /// Returns `true` if a filled pixel has been erased
-    pub fn set_pixel(&mut self, x: usize, y: usize, fill_pixel: bool) -> bool {
-        let mut index: usize = Self::WIDTH;
-        index *= y % Self::HEIGHT;
-        index += x % Self::WIDTH;
-
-        let existing_pixel = &mut self.buffer[index];
-        let vf = existing_pixel.filled && fill_pixel;
-        existing_pixel.set_filled(fill_pixel ^ existing_pixel.filled);
-        self.changed = true;
-        vf
+    pub fn fill(&mut self, fill: bool) {
+        self.buffer.fill(if fill { 0xFF } else { 0x00 });
     }
 
     pub fn draw(&mut self, frame: &mut [u8]) -> bool {
@@ -80,15 +54,28 @@ impl Screen {
             return false;
         }
 
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            let px = self.buffer[i];
+        for (index, px) in self.buffer.iter().enumerate() {
+            for j in 0..8 {
+                let slice: [u8; 4] = if px & (1 << j) != 0 {
+                    [0xff, 0xff, 0xff, 0xff]
+                } else {
+                    [0, 0, 0, 0]
+                };
+                frame.chunks_exact_mut(4).collect::<Vec<&mut u8>>();
+            }
+        }
 
-            let slice: [u8; 4] = if px.filled {
-                [0xff, 0xff, 0xff, 0xff]
-            } else {
-                [0, 0, 0, 0]
-            };
-            pixel.copy_from_slice(&slice);
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            let buffer_index = i / 8;
+            let px = self.buffer[buffer_index];
+            for j in 0..8 {
+                let slice: [u8; 4] = if px & (1 << j) != 0 {
+                    [0xff, 0xff, 0xff, 0xff]
+                } else {
+                    [0, 0, 0, 0]
+                };
+                pixel.copy_from_slice(&slice);
+            }
         }
         self.changed = false;
         true
