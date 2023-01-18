@@ -27,6 +27,23 @@ pub fn read_keymap(path: PathBuf) -> Result<Keymap> {
 }
 
 pub fn default_keymap() -> Keymap {
-    let data = "{\"keys\":{\"Digit0\":0,\"Numpad0\":0,\"Digit1\":1,\"Numpad1\":1,\"Digit2\":2,\"Numpad2\":2,\"Digit3\":3,\"Numpad3\":3,\"Digit4\":4,\"Numpad4\":4,\"Digit5\":5,\"Numpad5\":5,\"Digit6\":6,\"Numpad6\":6,\"Digit7\":7,\"Numpad7\":7,\"Digit8\":8,\"Numpad8\":8,\"Digit9\":9,\"Numpad9\":9,\"KeyA\":10,\"KeyB\":11,\"KeyC\":12,\"KeyD\":13,\"KeyE\":14,\"KeyF\":15}}";
-    parse_string(data).unwrap()
+    let keys: HashMap<KeyCode, u8> = HashMap::from([
+        (KeyCode::Digit1, 1),
+        (KeyCode::Digit2, 2),
+        (KeyCode::Digit3, 3),
+        (KeyCode::Digit4, 12),
+        (KeyCode::KeyQ, 4),
+        (KeyCode::KeyW, 5),
+        (KeyCode::KeyE, 6),
+        (KeyCode::KeyR, 13),
+        (KeyCode::KeyA, 7),
+        (KeyCode::KeyS, 8),
+        (KeyCode::KeyD, 9),
+        (KeyCode::KeyF, 14),
+        (KeyCode::KeyZ, 10),
+        (KeyCode::KeyX, 0),
+        (KeyCode::KeyC, 11),
+        (KeyCode::KeyV, 15),
+    ]);
+    Keymap { keys }
 }
