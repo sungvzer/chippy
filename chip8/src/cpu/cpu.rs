@@ -338,6 +338,7 @@ impl CPU {
                 let sprite_address = self.memory_location as usize;
                 let range = sprite_address..(sprite_address + byte_length);
 
+                self.set_register(VF, 0x0);
                 let sprite = &self.memory[range];
                 let did_erase = self.screen.draw_sprite(x, y, &sprite.to_vec());
                 self.set_register(VF, if did_erase { 1 } else { 0 });
