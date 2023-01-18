@@ -8,6 +8,10 @@ Chip-8 is an interpreted programming language developed initially for the COSMAC
 
 [Read more on Wikipedia](https://en.wikipedia.org/wiki/CHIP-8)
 
+## Documentation
+
+Some documentation about the project is available in the [docs/spec.md](./docs/spec.md) file; it is rewritten based on an existing 1997 reference manual I found on the internet.
+
 ## Implementation
 
 ### Emulation
