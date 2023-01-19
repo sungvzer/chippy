@@ -150,7 +150,12 @@ impl CPU {
 
         let mut index = 0x200;
         for byte in buffer {
-            self.memory[index] = byte;
+            let memory_byte = self.memory.get_mut(index);
+            if let None = memory_byte {
+                return Err("File too big".to_string());
+            }
+            let memory_byte = memory_byte.unwrap();
+            *memory_byte = byte;
             index += 1;
         }
 
