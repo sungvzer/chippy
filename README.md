@@ -25,9 +25,3 @@ The screen rendering is done via [pixels](https://docs.rs/pixels/latest/pixels/)
 ### Audio
 
 As the programming language only provides a single-frequency tone to be played, sound is handled via [cpal](https://docs.rs/cpal/latest/cpal/).
-
-## Known bugs
-
-There are currently some known bugs which make the emulator not functional at 100%:
-
-1. Screen drawing is buggy whenever sprites are overlapping with each other. See [#2](https://github.com/sungvzer/chippy/issues/2/).
