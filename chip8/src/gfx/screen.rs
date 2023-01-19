@@ -1,5 +1,7 @@
+use log::{debug, info};
+
 pub struct Screen {
-    buffer: [u8; (Screen::WIDTH / 8) * (Screen::HEIGHT / 8)],
+    buffer: [u8; Screen::WIDTH * Screen::HEIGHT],
     changed: bool,
 }
 
@@ -10,33 +12,45 @@ impl Screen {
 
 impl Screen {
     pub fn new() -> Self {
-        const HEIGHT_BYTES: usize = Screen::HEIGHT / 8;
-        const WIDTH_BYTES: usize = Screen::WIDTH / 8;
         Screen {
-            buffer: [0x00; WIDTH_BYTES * HEIGHT_BYTES],
+            buffer: [0x00; Self::WIDTH * Self::HEIGHT],
             changed: false,
         }
     }
     /// Returns `true` if a filled pixel has been erased
     pub fn draw_sprite(&mut self, mut x: usize, mut y: usize, sprite: &Vec<u8>) -> bool {
         let mut did_erase_pixel = false;
-        x = x % Screen::WIDTH;
-        y = y % Screen::HEIGHT;
+        log::debug!("Sprite: {:0x?}", sprite);
 
-        // For every byte (0b01010101)
+        x %= Screen::WIDTH;
+        y %= Screen::HEIGHT;
+
+        // For every byte (0b01010101) in the sprite, we need to write 8 bytes into our memory
         for sprite_byte in sprite {
-            if *sprite_byte != 0 {
-                println!("Drawing 0b{:b}", *sprite_byte);
-            }
+            // Convert the (x,y) into a 1D index
             let index = (y * Screen::WIDTH) + x;
-            println!("Converting {x},{y} to {index}");
-            let current_byte = self.buffer.get_mut(index).unwrap();
-            did_erase_pixel = sprite_byte & *current_byte != 0;
 
-            *current_byte ^= sprite_byte;
+            // For every bit
+            for bit in 0..8 {
+                // Find out whether it's a 1 or a 0 (white or black pixel)
+                let mask = 1 << bit;
+                let masked_sprite_byte = sprite_byte & mask;
+                let draw_byte: u8 = if masked_sprite_byte != 0 { 0xff } else { 0x00 };
+
+                // "Mirror effect", draw from index + 7 to index
+                let index = index + (7 - bit);
+
+                // VF calculation and XOR onto screen
+                did_erase_pixel |= (self.buffer[index] == 0xff) && draw_byte == 0xff;
+                self.buffer[index] ^= draw_byte;
+            }
             y += 1;
         }
+
         self.changed = true;
+        if did_erase_pixel {
+            info!("Erased!")
+        }
         did_erase_pixel
     }
 
@@ -54,29 +68,19 @@ impl Screen {
             return false;
         }
 
+        let mut pixel_vector: Vec<&mut [u8]> = frame.chunks_exact_mut(4).collect();
+
+        // For every pixel (byte)
         for (index, px) in self.buffer.iter().enumerate() {
-            for j in 0..8 {
-                let slice: [u8; 4] = if px & (1 << j) != 0 {
-                    [0xff, 0xff, 0xff, 0xff]
-                } else {
-                    [0, 0, 0, 0]
-                };
-                frame.chunks_exact_mut(4).collect::<Vec<&mut u8>>();
-            }
+            // Pick the individual bit
+            let slice: [u8; 4] = if *px == 0xff {
+                [0xff, 0xff, 0xff, 0xff]
+            } else {
+                [0, 0, 0, 0]
+            };
+            pixel_vector[index].copy_from_slice(&slice);
         }
 
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            let buffer_index = i / 8;
-            let px = self.buffer[buffer_index];
-            for j in 0..8 {
-                let slice: [u8; 4] = if px & (1 << j) != 0 {
-                    [0xff, 0xff, 0xff, 0xff]
-                } else {
-                    [0, 0, 0, 0]
-                };
-                pixel.copy_from_slice(&slice);
-            }
-        }
         self.changed = false;
         true
     }
