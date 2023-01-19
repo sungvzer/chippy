@@ -143,12 +143,12 @@ impl CPU {
             return Err("Did not provide a file".to_string());
         }
 
-        let file = file.unwrap();
+        let mut file = file.unwrap();
 
         let mut buffer = vec![];
-        let bytes = file.take(1024).read_to_end(&mut buffer).unwrap();
+        let bytes = file.read_to_end(&mut buffer).unwrap();
 
-        let mut index = 512;
+        let mut index = 0x200;
         for byte in buffer {
             self.memory[index] = byte;
             index += 1;
