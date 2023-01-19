@@ -48,9 +48,6 @@ impl Screen {
         }
 
         self.changed = true;
-        if did_erase_pixel {
-            info!("Erased!")
-        }
         did_erase_pixel
     }
 
