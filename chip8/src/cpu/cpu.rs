@@ -1,5 +1,5 @@
 use crate::{cpu::sprites::get_sprite, gfx::screen::Screen, sound::message::SoundMessage};
-use std::{fs::OpenOptions, io::Read, path::PathBuf, sync::mpsc::Sender};
+use std::{fs::OpenOptions, io::Read, path::PathBuf, sync::mpsc::Sender, time::Instant};
 
 use log::{debug, error, info, warn};
 
@@ -63,6 +63,9 @@ pub struct CPU {
 
     delay_timer: DelayTimer,
     sound_timer: SoundTimer,
+
+    /// Frequency in Hz
+    frequency: u32,
 }
 
 impl CPU {
@@ -79,7 +82,7 @@ impl CPU {
         &mut self.screen
     }
 
-    pub fn new(sound_tx: Sender<SoundMessage>) -> Self {
+    pub fn new(sound_tx: Sender<SoundMessage>, frequency: u32) -> Self {
         let mut cpu = CPU {
             registers: [0x0; 16],
             memory_location: 0x0,
@@ -92,6 +95,7 @@ impl CPU {
             stack: [0x0; 16],
             delay_timer: DelayTimer::new(),
             sound_timer: SoundTimer::new(sound_tx),
+            frequency,
         };
         cpu.initialize_sprites();
         cpu.clear_screen();
@@ -233,6 +237,12 @@ impl CPU {
     }
 
     pub fn fetch_decode_execute(&mut self) -> CPUIterationDecision {
+        let now = Instant::now();
+        let milliseconds_to_reach = if self.frequency > 0 {
+            (1000 / self.frequency) as f64
+        } else {
+            0.0
+        };
         if self.waiting_for_key_press && self.active_key_code == Option::None {
             return CPUIterationDecision::Continue;
         }
@@ -503,6 +513,11 @@ impl CPU {
             }
         }
         self.program_counter += 2;
+        loop {
+            if now.elapsed().as_nanos() as f64 / 1_000_000.0 >= milliseconds_to_reach {
+                break;
+            }
+        }
 
         CPUIterationDecision::Continue
     }

@@ -56,6 +56,10 @@ struct Cli {
     #[arg(short, long)]
     keymap: Option<PathBuf>,
 
+    /// Frequency in Hz for the CPU
+    #[arg(short = 'F', long, default_value_t = 500)]
+    frequency: u32,
+
     /// Turn debugging information on
     #[arg(short, long)]
     debug: bool,
@@ -156,7 +160,7 @@ fn main() -> Result<(), String> {
     let join_clock = init_60hz_clock(clock_tx, Arc::clone(&timer_tick_stop));
     let join_sound = init_beep(sound_message_rx);
 
-    let mut cpu = CPU::new(sound_message_tx);
+    let mut cpu = CPU::new(sound_message_tx, args.frequency);
 
     match logs::log_init(args.debug) {
         Ok(()) => {
