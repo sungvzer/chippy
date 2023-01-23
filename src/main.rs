@@ -8,11 +8,12 @@ use keymap::Keymap;
 use pixels::{Pixels, SurfaceTexture};
 
 use tao::{
+    accelerator::{Accelerator, SysMods},
     dpi::LogicalSize,
     event::{ElementState, Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     keyboard::KeyCode,
-    menu::{MenuBar, MenuItem},
+    menu::{MenuBar, MenuId, MenuItem, MenuItemAttributes},
     window::{Window, WindowBuilder},
 };
 
@@ -68,6 +69,16 @@ struct Cli {
 fn create_window(width: f64, height: f64, event_loop: &EventLoop<()>) -> Window {
     let mut file_menu = MenuBar::new();
     file_menu.add_native_item(MenuItem::Quit);
+    file_menu.add_item(
+        MenuItemAttributes::new("Speed &up")
+            .with_id(MenuId(1))
+            .with_accelerators(&Accelerator::new(SysMods::Cmd, KeyCode::ArrowUp)),
+    );
+    file_menu.add_item(
+        MenuItemAttributes::new("Speed &down")
+            .with_id(MenuId(2))
+            .with_accelerators(&Accelerator::new(SysMods::Cmd, KeyCode::ArrowDown)),
+    );
 
     let mut menu = MenuBar::new();
     menu.add_submenu("File", true, file_menu);
@@ -197,10 +208,29 @@ fn main() -> Result<(), String> {
     let mut join_sound_option = Some(join_sound);
 
     event_loop.run(move |event, _target, control_flow| {
+        *control_flow = ControlFlow::Wait;
         if let Ok(tick) = clock_rx.try_recv() {
             cpu.tick(tick);
         }
         match event {
+            Event::MenuEvent {
+                window_id: _,
+                menu_id,
+                origin: _,
+                ..
+            } if menu_id.0 == 1 => {
+                cpu.speed_up();
+                info!("Speed up requested");
+            }
+            Event::MenuEvent {
+                window_id: _,
+                menu_id,
+                origin: _,
+                ..
+            } if menu_id.0 == 2 => {
+                cpu.slow_down();
+                info!("Slow down requested");
+            }
             Event::WindowEvent { event, .. } => {
                 handle_window_event(
                     event,

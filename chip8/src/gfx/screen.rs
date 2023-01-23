@@ -1,5 +1,3 @@
-use log::{debug, info};
-
 pub struct Screen {
     buffer: [u8; Screen::WIDTH * Screen::HEIGHT],
     changed: bool,

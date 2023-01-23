@@ -69,6 +69,18 @@ pub struct CPU {
 }
 
 impl CPU {
+    pub fn speed_up(&mut self) {
+        let new_frequency = self.frequency + 50;
+        self.frequency = new_frequency.min(2000);
+        println!("New frequency: {}", self.frequency);
+    }
+
+    pub fn slow_down(&mut self) {
+        let new_frequency = self.frequency - 50;
+        self.frequency = new_frequency.max(50);
+        println!("New frequency: {}", self.frequency);
+    }
+
     pub fn tick(&mut self, _: u64) {
         self.sound_timer.tick();
         self.delay_timer.tick();
