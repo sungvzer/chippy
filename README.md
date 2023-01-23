@@ -1,6 +1,13 @@
 # chippy 
 
-A WIP Chip-8 emulator written in Rust
+A Chip-8 emulator written in Rust
+
+<p align="center">
+    <img width="600" alt="immagine" src="https://user-images.githubusercontent.com/52582911/214082817-5f123b6c-6f4e-4a77-afa4-957677637fb8.png"/>
+    <p align="center">
+     Chippy running a demo from Marco Varesio
+    </p>
+</p>
 
 ## About
 
